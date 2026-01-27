@@ -118,7 +118,7 @@ async def get_product(product_id: int):
     """
     Get a specific product by ID with price comparison.
     """
-    products = get_sample_products()
+    products = get_all_products()
 
     # Find product by ID
     product = next((p for p in products if p["id"] == product_id), None)
@@ -149,7 +149,7 @@ async def get_product_prices(product_id: int):
     Get price comparison for a specific product.
     Returns prices from all available sources.
     """
-    products = get_sample_products()
+    products = get_all_products()
 
     # Find product by ID
     product = next((p for p in products if p["id"] == product_id), None)
@@ -172,7 +172,7 @@ async def list_products(
     List all products with price comparison.
     Optionally filter by category.
     """
-    products = get_sample_products()
+    products = get_all_products()
 
     # Filter by category if provided
     if category:
