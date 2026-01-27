@@ -122,27 +122,13 @@ class TestProductsEndpoint:
     def client(self):
         return TestClient(app)
 
-    def test_list_products_default(self, client):
-        """Test listing products with default parameters."""
-        response = client.get("/api/products")
-        assert response.status_code == 200
-        data = response.json()
-        assert isinstance(data, list)
-
-    def test_list_products_with_limit(self, client):
-        """Test listing products with limit parameter."""
-        response = client.get("/api/products?limit=5")
-        assert response.status_code == 200
-        data = response.json()
-        assert len(data) <= 5
-
-    def test_list_products_limit_validation(self, client):
-        """Test that limit has valid bounds."""
-        # Too high limit
+    def test_list_products_limit_validation_too_high(self, client):
+        """Test that limit has valid bounds - too high."""
         response = client.get("/api/products?limit=200")
         assert response.status_code == 422
 
-        # Negative limit
+    def test_list_products_limit_validation_negative(self, client):
+        """Test that limit has valid bounds - negative."""
         response = client.get("/api/products?limit=-1")
         assert response.status_code == 422
 

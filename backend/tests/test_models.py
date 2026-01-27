@@ -5,7 +5,17 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.schemas.product import PriceInfo, ProductWithPrices, SearchResponse
+from app.schemas.product import PriceInfo, ProductWithPrices, SearchResponse, SourceEnum
+
+
+class TestSourceEnum:
+    """Tests for SourceEnum."""
+
+    def test_source_enum_values(self):
+        """Test that all source values exist."""
+        assert SourceEnum.AMAZON == "Amazon"
+        assert SourceEnum.EBAY == "eBay"
+        assert SourceEnum.WALMART == "Walmart"
 
 
 class TestPriceInfoModel:
@@ -14,24 +24,38 @@ class TestPriceInfoModel:
     def test_create_price_info(self):
         """Test creating a price info object."""
         price = PriceInfo(
-            source="Amazon",
+            source=SourceEnum.AMAZON,
             price=99.99,
-            url="https://amazon.com/product",
-            in_stock=True
+            url="https://amazon.com/product"
         )
-        assert price.source == "Amazon"
+        assert price.source == SourceEnum.AMAZON
         assert price.price == 99.99
         assert price.url == "https://amazon.com/product"
-        assert price.in_stock is True
+        assert price.availability is True  # default
 
-    def test_price_info_optional_fields(self):
-        """Test price info with optional fields."""
+    def test_price_info_with_all_fields(self):
+        """Test price info with all fields."""
         price = PriceInfo(
-            source="Test",
-            price=50.0
+            source=SourceEnum.EBAY,
+            price=50.0,
+            currency="USD",
+            availability=False,
+            url="https://ebay.com/item"
         )
-        assert price.source == "Test"
+        assert price.source == SourceEnum.EBAY
         assert price.price == 50.0
+        assert price.currency == "USD"
+        assert price.availability is False
+
+    def test_price_must_be_positive(self):
+        """Test that price must be positive."""
+        with pytest.raises(ValueError):
+            PriceInfo(source=SourceEnum.AMAZON, price=-10.0)
+
+    def test_price_rounds_to_two_decimals(self):
+        """Test that price is rounded to two decimals."""
+        price = PriceInfo(source=SourceEnum.AMAZON, price=99.999)
+        assert price.price == 100.0
 
 
 class TestProductWithPricesModel:
@@ -41,8 +65,8 @@ class TestProductWithPricesModel:
         """Test creating a product with prices."""
         now = datetime.now()
         prices = [
-            PriceInfo(source="Store A", price=100.0),
-            PriceInfo(source="Store B", price=90.0),
+            PriceInfo(source=SourceEnum.AMAZON, price=100.0),
+            PriceInfo(source=SourceEnum.EBAY, price=90.0),
         ]
 
         product = ProductWithPrices(
@@ -70,9 +94,9 @@ class TestProductWithPricesModel:
         """Test product price statistics are calculated correctly."""
         now = datetime.now()
         prices = [
-            PriceInfo(source="A", price=100.0),
-            PriceInfo(source="B", price=200.0),
-            PriceInfo(source="C", price=150.0),
+            PriceInfo(source=SourceEnum.AMAZON, price=100.0),
+            PriceInfo(source=SourceEnum.EBAY, price=200.0),
+            PriceInfo(source=SourceEnum.WALMART, price=150.0),
         ]
 
         product = ProductWithPrices(
@@ -89,6 +113,20 @@ class TestProductWithPricesModel:
         assert product.lowest_price == 100.0
         assert product.highest_price == 200.0
         assert product.average_price == 150.0
+
+    def test_product_with_empty_prices(self):
+        """Test creating a product with empty prices list."""
+        now = datetime.now()
+        product = ProductWithPrices(
+            id=1,
+            name="Test Product",
+            created_at=now,
+            prices=[]
+        )
+
+        assert product.prices == []
+        assert product.lowest_price is None
+        assert product.highest_price is None
 
 
 class TestSearchResponseModel:
