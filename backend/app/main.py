@@ -1,8 +1,31 @@
+from contextlib import asynccontextmanager
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import init_db
 from app.api.routes import router
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan handler for startup and shutdown events."""
+    # Startup
+    init_db()
+    logger.info(f"🚀 {settings.API_TITLE} v{settings.API_VERSION} started!")
+    logger.info(f"📚 API Documentation: http://localhost:8000/docs")
+    yield
+    # Shutdown
+    logger.info("Application shutting down...")
+
 
 # Create FastAPI app
 app = FastAPI(
@@ -19,7 +42,8 @@ app = FastAPI(
     All price data is validated using Pydantic models for data integrity.
     """,
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
 # Configure CORS
@@ -30,14 +54,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize database on startup"""
-    init_db()
-    print(f"🚀 {settings.API_TITLE} v{settings.API_VERSION} started!")
-    print(f"📚 API Documentation: http://localhost:8000/docs")
 
 
 @app.get("/", tags=["health"])

@@ -1,8 +1,10 @@
-# 🛒 PriceCompare Pro - פלטפורמת השוואת מחירים חכמה
+# PriceCompare Pro - Smart Price Comparison Platform
 
+![CI](https://github.com/SaharHalili95/price-comparison-platform/actions/workflows/ci.yml/badge.svg)
+![Python](https://img.shields.io/badge/python-3.11+-blue.svg)
+![TypeScript](https://img.shields.io/badge/typescript-5.0+-blue.svg)
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
-![Platform](https://img.shields.io/badge/platform-Israeli_Sites-orange.svg)
 
 פלטפורמה מתקדמת להשוואת מחירים עם תמיכה מלאה באתרים ישראליים מובילים: **Zap, KSP ו-Bug**.
 
@@ -45,6 +47,26 @@ curl "http://localhost:8001/api/products/search?query=mouse&use_real_data=true"
 ```
 
 למידע מפורט: [SCRAPERS_GUIDE.md](./SCRAPERS_GUIDE.md)
+
+## Docker
+
+Run the entire application with Docker:
+
+```bash
+docker-compose up --build
+```
+
+This will start:
+- Backend API at `http://localhost:8001`
+- Frontend at `http://localhost:5173`
+
+## Testing
+
+```bash
+cd backend
+pip install -r requirements.txt
+pytest tests/ -v
+```
 
 ---
 
