@@ -1,37 +1,53 @@
-import axios from 'axios';
 import { ProductWithPrices, SearchResponse, PriceInfo } from '../types/product';
+import { mockProducts, searchMockProducts } from '../data/mockProducts';
 
-const API_BASE_URL = 'http://localhost:8001/api';
-
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+// Simulate API delay for realistic feel
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const searchProducts = async (query: string): Promise<SearchResponse> => {
-  const response = await api.get<SearchResponse>('/products/search', {
-    params: { query }
-  });
-  return response.data;
+  await delay(300); // Simulate network delay
+
+  const products = searchMockProducts(query);
+
+  return {
+    products,
+    total_results: products.length,
+    query
+  };
 };
 
 export const getProduct = async (productId: number): Promise<ProductWithPrices> => {
-  const response = await api.get<ProductWithPrices>(`/products/${productId}`);
-  return response.data;
+  await delay(200);
+
+  const product = mockProducts.find(p => p.id === productId);
+
+  if (!product) {
+    throw new Error(`Product with id ${productId} not found`);
+  }
+
+  return product;
 };
 
 export const getProductPrices = async (productId: number): Promise<PriceInfo[]> => {
-  const response = await api.get<PriceInfo[]>(`/products/${productId}/prices`);
-  return response.data;
+  await delay(200);
+
+  const product = mockProducts.find(p => p.id === productId);
+
+  if (!product) {
+    throw new Error(`Product with id ${productId} not found`);
+  }
+
+  return product.prices;
 };
 
 export const listProducts = async (category?: string, limit: number = 10): Promise<ProductWithPrices[]> => {
-  const response = await api.get<ProductWithPrices[]>('/products', {
-    params: { category, limit }
-  });
-  return response.data;
-};
+  await delay(300);
 
-export default api;
+  let products = [...mockProducts];
+
+  if (category) {
+    products = products.filter(p => p.category === category);
+  }
+
+  return products.slice(0, limit);
+};
