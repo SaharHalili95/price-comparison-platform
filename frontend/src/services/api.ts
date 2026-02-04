@@ -1,5 +1,5 @@
 import { ProductWithPrices, SearchResponse, PriceInfo } from '../types/product';
-import { mockProducts, searchMockProducts, refreshPrices } from '../data/mockProducts';
+import { mockProducts, refreshPrices } from '../data/mockProducts';
 
 // Simulate API delay for realistic feel
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
