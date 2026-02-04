@@ -217,3 +217,49 @@ export const searchMockProducts = (query: string): ProductWithPrices[] => {
     product.category?.toLowerCase().includes(searchTerm)
   );
 };
+
+// Refresh prices with random variations (simulates real-time price updates)
+export const refreshPrices = (): ProductWithPrices[] => {
+  const now = new Date().toISOString().split('T')[0];
+
+  return mockProducts.map(product => {
+    const updatedPrices = product.prices.map(priceInfo => {
+      // Randomly adjust price by -5% to +5%
+      const variation = (Math.random() * 0.1 - 0.05); // -5% to +5%
+      const newPrice = Math.round(priceInfo.price * (1 + variation));
+
+      // Randomly toggle availability (90% chance to be available)
+      const newAvailability = Math.random() > 0.1;
+
+      return {
+        ...priceInfo,
+        price: newPrice,
+        availability: newAvailability,
+        last_updated: now,
+      };
+    });
+
+    // Recalculate price statistics
+    const availablePrices = updatedPrices
+      .filter(p => p.availability)
+      .map(p => p.price);
+
+    const lowest = availablePrices.length > 0
+      ? Math.min(...availablePrices)
+      : undefined;
+    const highest = availablePrices.length > 0
+      ? Math.max(...availablePrices)
+      : undefined;
+    const average = availablePrices.length > 0
+      ? Math.round(availablePrices.reduce((a, b) => a + b, 0) / availablePrices.length)
+      : undefined;
+
+    return {
+      ...product,
+      prices: updatedPrices,
+      lowest_price: lowest,
+      highest_price: highest,
+      average_price: average,
+    };
+  });
+};

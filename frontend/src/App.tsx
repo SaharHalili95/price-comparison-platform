@@ -3,14 +3,16 @@ import Layout from './components/Layout';
 import SearchBar from './components/SearchBar';
 import ProductCard from './components/ProductCard';
 import PriceComparisonTable from './components/PriceComparisonTable';
-import { searchProducts } from './services/api';
+import { searchProducts, refreshAllPrices } from './services/api';
 import { ProductWithPrices, SearchResponse } from './types/product';
 
 function App() {
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResponse | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<ProductWithPrices | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
 
   const handleSearch = async (query: string) => {
     setLoading(true);
@@ -18,13 +20,34 @@ function App() {
     setSelectedProduct(null);
 
     try {
-      const results = await searchProducts(query);
+      const results = await searchProducts(query, lastRefreshTime !== null);
       setSearchResults(results);
     } catch (err) {
       console.error('Search error:', err);
       setError('Failed to search products. Please make sure the backend server is running.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRefreshPrices = async () => {
+    setRefreshing(true);
+    setError(null);
+
+    try {
+      await refreshAllPrices();
+      setLastRefreshTime(new Date());
+
+      // Re-run last search if there are results
+      if (searchResults) {
+        const results = await searchProducts(searchResults.query, true);
+        setSearchResults(results);
+      }
+    } catch (err) {
+      console.error('Refresh error:', err);
+      setError('Failed to refresh prices. Please try again.');
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -95,6 +118,36 @@ function App() {
 
       {/* Search Bar */}
       <SearchBar onSearch={handleSearch} loading={loading} />
+
+      {/* Refresh Prices Button */}
+      <div className="max-w-4xl mx-auto mt-4 mb-6 flex items-center justify-between">
+        <button
+          onClick={handleRefreshPrices}
+          disabled={refreshing}
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg
+            className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+          <span>{refreshing ? 'מרענן מחירים...' : 'רענן מחירים'}</span>
+        </button>
+
+        {lastRefreshTime && (
+          <div className="text-sm text-gray-600">
+            עדכון אחרון: {lastRefreshTime.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
+          </div>
+        )}
+      </div>
 
       {/* Error Message */}
       {error && (
