@@ -2,7 +2,9 @@
 
 ## Overview
 
-A full-stack web application that compares product prices from multiple online stores (Amazon, eBay, Walmart) to help users find the best deals.
+A full-stack web application that compares product prices from multiple online stores (Amazon, eBay, Walmart) to help users find the best deals. The application features a live demo deployed on GitHub Pages that runs entirely in the browser using mock data - no backend installation required!
+
+🌐 **[Live Demo](https://saharhalili95.github.io/price-comparison-platform/)**
 
 ## Technology Stack
 
@@ -218,15 +220,29 @@ price-comparison-platform/
 
 ## Sample Products
 
-The application includes 8 sample products:
-1. Wireless Mouse - $29.99
-2. Mechanical Keyboard - $89.99
-3. USB-C Hub - $45.99
-4. Webcam HD 1080p - $69.99
-5. Laptop Stand - $39.99
-6. Bluetooth Headphones - $149.99
-7. Portable SSD 1TB - $119.99
-8. Monitor 27 inch - $349.99
+The live demo includes 12 sample products with Israeli pricing (₪):
+
+### Electronics
+1. iPhone 15 Pro Max 256GB - ₪4,999-5,399
+2. Samsung Galaxy S24 Ultra 512GB - ₪4,599-4,999
+
+### Computers
+3. MacBook Pro 14 M3 Pro - ₪9,499-9,999
+4. Dell XPS 15 - ₪7,999-8,499
+
+### Gaming
+5. PlayStation 5 Slim - ₪1,899-2,199
+6. Xbox Series X - ₪1,799-2,099
+7. Logitech G Pro Wireless Mouse - ₪449-549
+
+### Home Appliances
+8. Dyson V15 Detect - ₪2,299-2,699
+9. iRobot Roomba j7+ - ₪2,499-2,899
+
+### Smart Home
+10. Amazon Echo Dot 5th Gen - ₪199-249
+11. Google Nest Hub 2nd Gen - ₪399-499
+12. Philips Hue Starter Kit - ₪499-599
 
 ## Testing the Application
 
@@ -249,7 +265,15 @@ The application includes 8 sample products:
 
 ### Frontend Testing
 
-1. Open http://localhost:5173
+**Option 1: Test Live Demo**
+1. Visit https://saharhalili95.github.io/price-comparison-platform/
+2. Enter search term (e.g., "iPhone", "PlayStation")
+3. View results
+4. Click category buttons (אלקטרוניקה, מחשבים, גיימינג)
+5. Verify price comparison display
+
+**Option 2: Test Local Development**
+1. Open http://localhost:5173/price-comparison-platform/
 2. Enter search term
 3. View results
 4. Click "Compare Prices"
@@ -304,8 +328,17 @@ Tailwind CSS makes styling easy. Edit component classes or add custom styles in 
 ### Hosting Options
 
 - **Backend**: Heroku, DigitalOcean, AWS EC2, Google Cloud Run
-- **Frontend**: Vercel, Netlify, GitHub Pages, AWS S3 + CloudFront
+- **Frontend**: GitHub Pages (current), Vercel, Netlify, AWS S3 + CloudFront
 - **Database**: AWS RDS, DigitalOcean Managed Databases
+
+### Current Deployment
+
+The application is automatically deployed to GitHub Pages using GitHub Actions:
+- **URL**: https://saharhalili95.github.io/price-comparison-platform/
+- **Trigger**: Any push to `main` branch
+- **Build**: Vite builds the React app with TypeScript
+- **Deploy**: GitHub Actions deploys to `gh-pages` branch
+- **Data**: Uses mock data stored in `frontend/src/data/mockProducts.ts`
 
 ## Future Enhancements
 
