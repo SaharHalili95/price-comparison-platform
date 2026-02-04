@@ -1,38 +1,40 @@
-# 🕷️ מדריך Scrapers - גריפת מחירים מאתרים ישראליים
+# 🕷️ Scrapers Guide - Price Scraping from Israeli Websites
 
-## 📋 סקירה כללית
+## 📋 Overview
 
-המערכת כוללת scrapers מתקדמים שאוספים מידע אמיתי ממקורות ישראליים מובילים:
+The system includes advanced scrapers that collect real information from leading Israeli sources:
 
-- **Zap.co.il** - אתר השוואת המחירים הפופולרי ביותר בישראל
-- **KSP** - רשת אלקטרוניקה ומחשבים מובילה
-- **Bug** - רשת אלקטרוניקה מובילה
+- **Zap.co.il** - Israel's most popular price comparison website
+- **KSP** - Leading electronics and computer retail chain
+- **Bug** - Leading electronics retail chain
 
-## 🚀 מצבי הרצה
+**Note:** The live demo at [https://saharhalili95.github.io/price-comparison-platform/](https://saharhalili95.github.io/price-comparison-platform/) uses mock data and doesn't require scraping. This guide is for local development with the backend.
 
-### 1. Mock Data (ברירת מחדל) - מהיר למפתחים
+## 🚀 Operating Modes
+
+### 1. Mock Data (Default) - Fast for Developers
 ```bash
-# מצב demo עם נתונים מדומים
-# לא דורש התחברות לאינטרנט
-# מהיר מאוד לפיתוח
+# Demo mode with simulated data
+# No internet connection required
+# Very fast for development
 
 curl "http://localhost:8001/api/products/search?query=mouse"
 ```
 
-### 2. Real Scraping - נתונים אמיתיים
+### 2. Real Scraping - Actual Data
 ```bash
-# גריפה אמיתית מהאתרים הישראליים
+# Real scraping from Israeli websites
 curl "http://localhost:8001/api/products/search?query=mouse&use_real_data=true"
 ```
 
 ## 📡 API Endpoints
 
-### בדיקת סטטוס Scrapers
+### Check Scrapers Status
 ```bash
 GET /api/scraper/status
 ```
 
-**תגובה:**
+**Response:**
 ```json
 {
   "scrapers_available": true,
@@ -42,208 +44,291 @@ GET /api/scraper/status
 }
 ```
 
-### בדיקת Scrapers
+### Test Scrapers
 ```bash
 POST /api/scraper/test?query=mouse
 ```
 
-**תגובה:**
+**Response:**
 ```json
 {
   "query": "mouse",
   "results": {
     "zap": {
-      "count": 3,
-      "products": [...]
+      "success": true,
+      "products_found": 15,
+      "response_time": "1.2s"
     },
     "ksp": {
-      "count": 3,
-      "products": [...]
+      "success": true,
+      "products_found": 8,
+      "response_time": "0.9s"
     },
     "bug": {
-      "count": 3,
-      "products": [...]
+      "success": true,
+      "products_found": 12,
+      "response_time": "1.1s"
     }
-  },
-  "total_products": 9
+  }
 }
 ```
 
-### חיפוש עם נתונים אמיתיים
-```bash
-GET /api/products/search?query=keyboard&use_real_data=true
-```
+## 🛠️ Scraper Implementation
 
-## 🏗️ ארכיטקטורה
+### Architecture
 
-```
-app/
-└── scrapers/
-    ├── __init__.py              # נקודת כניסה
-    ├── base_scraper.py          # מחלקת בסיס עם פונקציות משותפות
-    ├── zap_scraper.py           # Scraper ל-Zap
-    ├── ksp_scraper.py           # Scraper ל-KSP
-    ├── bug_scraper.py           # Scraper ל-Bug
-    └── scraper_manager.py       # מנהל ומצרף תוצאות
-```
+Each scraper implements the `BaseScraper` interface:
 
-## ⚙️ התקנה
-
-### דרישות מקדימות
-```bash
-cd backend
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-### ספריות נדרשות
-- `beautifulsoup4` - פרסור HTML
-- `selenium` - אוטומציה של דפדפן
-- `requests` - HTTP requests
-- `lxml` - פרסור מהיר
-- `fake-useragent` - User agents אקראיים
-- `pandas` - עיבוד נתונים
-
-## 🎯 שימוש ב-Python
-
-### דוגמה פשוטה
 ```python
-from app.scrapers.scraper_manager import ScraperManager
+class BaseScraper:
+    async def search(self, query: str) -> List[ProductData]:
+        """Search for products"""
+        pass
 
-# יצירת מנהל scrapers
-with ScraperManager() as manager:
-    # חיפוש במקביל בכל האתרים
-    results = manager.search_all_parallel("mouse", max_results_per_site=10)
-
-    # צירוף התוצאות
-    aggregated = manager.aggregate_results(results)
-
-    # הדפסת התוצאות
-    for product in aggregated:
-        print(f"{product['name']}: ₪{product['lowest_price']}")
+    async def get_product_prices(self, product_url: str) -> List[PriceInfo]:
+        """Get prices for specific product"""
+        pass
 ```
 
-### שימוש ב-Scraper בודד
+### Zap Scraper Example
+
 ```python
-from app.scrapers import ZapScraper
+class ZapScraper(BaseScraper):
+    BASE_URL = "https://www.zap.co.il"
 
-with ZapScraper() as zap:
-    # חיפוש מוצרים
-    products = zap.search_product("keyboard", max_results=5)
+    async def search(self, query: str):
+        # Make HTTP request
+        response = await self.client.get(
+            f"{self.BASE_URL}/search",
+            params={"q": query}
+        )
 
-    # פרטים על מוצר
-    if products:
-        details = zap.get_product_details(products[0]['url'])
-        print(details)
+        # Parse HTML
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Extract products
+        products = []
+        for item in soup.select('.product-item'):
+            product = self._parse_product(item)
+            products.append(product)
+
+        return products
 ```
 
-## 🛡️ שיקולי אבטחה וביצועים
+## 🔧 Configuration
 
-### Rate Limiting
-ה-scrapers כוללים מנגנוני rate limiting מובנים:
-- השהיה אקראית בין 1-3 שניות בין requests
-- Exponential backoff במקרה של שגיאה
-- מקסימום 3 נסיונות חוזרים
+### Environment Variables
 
-### User Agents
-כל scraper משתמש ב-user agents אקראיים כדי להימנע מחסימה.
+Create `.env` file in `backend/` directory:
 
-### מקביליות
-`ScraperManager` מריץ scrapers במקביל ל-performance טוב יותר:
+```env
+# Scraper Settings
+USE_REAL_SCRAPERS=false
+SCRAPER_TIMEOUT=10
+MAX_RETRIES=3
+
+# Rate Limiting
+REQUESTS_PER_MINUTE=30
+CONCURRENT_REQUESTS=3
+
+# User Agent
+USER_AGENT=Mozilla/5.0 (compatible; PriceCompare/1.0)
+
+# Proxy (optional)
+# HTTP_PROXY=http://proxy.example.com:8080
+# HTTPS_PROXY=https://proxy.example.com:8080
+```
+
+### Enabling Real Scrapers
+
 ```python
-# מקביל (מהיר)
-results = manager.search_all_parallel("mouse")
-
-# סדרתי (יותר אמין)
-results = manager.search_all_sequential("mouse")
+# In backend/app/core/config.py
+class Settings(BaseSettings):
+    USE_REAL_SCRAPERS: bool = False  # Set to True
 ```
 
-## 📊 פורמט נתונים
+## 🚦 Rate Limiting
 
-### מוצר מצורף
-```json
-{
-  "name": "Logitech MX Master 3",
-  "description": "עכבר אלחוטי ארגונומי",
-  "image_url": "https://...",
-  "category": "Electronics",
-  "prices": [
-    {
-      "source": "Zap",
-      "price": 299.90,
-      "currency": "ILS",
-      "url": "https://...",
-      "availability": true,
-      "last_updated": "2026-01-13T..."
-    },
-    {
-      "source": "KSP",
-      "price": 319.00,
-      "currency": "ILS",
-      "url": "https://...",
-      "availability": true,
-      "last_updated": "2026-01-13T..."
-    }
-  ],
-  "lowest_price": 299.90,
-  "highest_price": 319.00,
-  "average_price": 309.45,
-  "potential_savings": 19.10,
-  "savings_percent": 6.0
+To avoid getting blocked:
+
+```python
+# Configure rate limiter
+RATE_LIMIT = {
+    "requests_per_minute": 30,
+    "concurrent_requests": 3,
+    "delay_between_requests": 2  # seconds
 }
+```
+
+## 🔄 Scraping Workflow
+
+1. **User searches** for product
+2. **API receives** search request
+3. **Scraper Manager** distributes query to all scrapers
+4. **Parallel scraping** from multiple sources
+5. **Results aggregation** and deduplication
+6. **Price analysis** (min, max, average)
+7. **Return results** to frontend
+
+## 📊 Mock Data vs Real Scraping
+
+### Mock Data (Current Live Demo)
+- ✅ Instant responses
+- ✅ No external dependencies
+- ✅ Consistent results
+- ✅ No rate limiting issues
+- ❌ Not real-time data
+
+### Real Scraping (Backend Only)
+- ✅ Real-time prices
+- ✅ Actual product availability
+- ✅ Real store links
+- ❌ Slower responses (1-3 seconds)
+- ❌ Requires rate limiting
+- ❌ May get blocked without proper headers
+
+## 🎯 Best Practices
+
+### 1. Respect robots.txt
+```python
+# Check robots.txt before scraping
+def can_scrape(url):
+    robots = urllib.robotparser.RobotFileParser()
+    robots.set_url(f"{url}/robots.txt")
+    robots.read()
+    return robots.can_fetch("*", url)
+```
+
+### 2. Use Proper Headers
+```python
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (compatible; PriceCompare/1.0)",
+    "Accept": "text/html,application/xhtml+xml",
+    "Accept-Language": "he-IL,he;q=0.9,en;q=0.8",
+    "Accept-Encoding": "gzip, deflate",
+    "Connection": "keep-alive"
+}
+```
+
+### 3. Implement Caching
+```python
+# Cache results for 15 minutes
+@cache(ttl=900)
+async def search_products(query: str):
+    return await scraper.search(query)
+```
+
+### 4. Handle Errors Gracefully
+```python
+try:
+    results = await scraper.search(query)
+except ScraperException as e:
+    logger.error(f"Scraper failed: {e}")
+    # Fall back to mock data
+    results = get_mock_results(query)
 ```
 
 ## 🐛 Debugging
 
-### הפעלת logging
+### Enable Debug Logging
 ```python
 import logging
 logging.basicConfig(level=logging.DEBUG)
-
-# עכשיו תראה לוגים מפורטים של הscraping
 ```
 
-### בדיקת scraper ספציפי
+### Test Individual Scrapers
 ```bash
-python -c "
-from app.scrapers import ZapScraper
-zap = ZapScraper()
-results = zap.search_product('mouse', max_results=3)
-for r in results:
-    print(r['name'], r.get('price'))
-"
+# Test Zap scraper
+curl "http://localhost:8001/api/scraper/test/zap?query=mouse"
+
+# Test KSP scraper
+curl "http://localhost:8001/api/scraper/test/ksp?query=mouse"
+
+# Test Bug scraper
+curl "http://localhost:8001/api/scraper/test/bug?query=mouse"
 ```
 
-## ⚠️ הערות חשובות
+### Common Issues
 
-1. **שימוש אחראי** - אל תריצו scrapers בתדירות גבוהה מדי
-2. **בדיקת robots.txt** - וודאו שאתם מכבדים את robots.txt של האתרים
-3. **מבנה DOM משתנה** - האתרים משנים את המבנה מעת לעת, ה-scrapers עשויים לדרוש עדכון
-4. **זמני תגובה** - scraping אמיתי איטי יותר ממוק data (3-10 שניות לחיפוש)
+#### 1. Blocked by Website
+**Solution:** Implement rotating proxies and vary User-Agent strings
 
-## 🔄 עדכון Scrapers
+#### 2. HTML Structure Changed
+**Solution:** Update CSS selectors in scraper code
 
-אם מבנה אתר השתנה, עדכנו את הסלקטורים ב:
-- `zap_scraper.py` - שורות 35-50 (סלקטורי מוצרים)
-- `ksp_scraper.py` - שורות 35-50
-- `bug_scraper.py` - שורות 35-50
+#### 3. Rate Limited
+**Solution:** Increase delay between requests, reduce concurrent requests
 
-## 📈 שיפורים עתידיים
+#### 4. Timeout Errors
+**Solution:** Increase `SCRAPER_TIMEOUT` in settings
 
-- [ ] הוספת caching לתוצאות
-- [ ] שמירת תוצאות ל-database
-- [ ] Scheduled scraping כל X שעות
-- [ ] התראות על ירידות מחיר
-- [ ] תמיכה באתרים נוספים (Amazon.com, eBay, etc.)
-- [ ] API למעקב אחר היסטוריית מחירים
+## 📈 Performance Optimization
 
-## 📞 תמיכה
+### 1. Parallel Scraping
+```python
+# Scrape from multiple sources simultaneously
+async def scrape_all(query: str):
+    tasks = [
+        zap_scraper.search(query),
+        ksp_scraper.search(query),
+        bug_scraper.search(query)
+    ]
+    results = await asyncio.gather(*tasks)
+    return results
+```
 
-נתקלתם בבעיה? בדקו את:
-1. `/api/scraper/status` - האם ה-scrapers זמינים?
-2. `/api/scraper/test` - האם ה-scrapers עובדים?
-3. הלוגים בקונסול של הbackend
+### 2. Connection Pooling
+```python
+# Reuse HTTP connections
+import httpx
+client = httpx.AsyncClient(
+    limits=httpx.Limits(max_connections=100)
+)
+```
+
+### 3. Response Caching
+```python
+# Cache scraped data
+from functools import lru_cache
+
+@lru_cache(maxsize=1000)
+def parse_product(html: str):
+    return BeautifulSoup(html, 'html.parser')
+```
+
+## 🔐 Legal Considerations
+
+- ⚖️ **Terms of Service:** Always check the website's ToS
+- 🤖 **robots.txt:** Respect crawling rules
+- 📜 **Rate Limits:** Don't overload servers
+- 💰 **Commercial Use:** Some sites prohibit commercial scraping
+- 📞 **Contact:** Consider reaching out for API access
+
+## 🌐 Alternative: Official APIs
+
+Many retailers offer official APIs:
+- Better reliability
+- Higher rate limits
+- Legal compliance
+- Structured data
+- Support and documentation
+
+**Recommendation:** Use official APIs when available instead of scraping.
+
+## 📚 Additional Resources
+
+- [BeautifulSoup Documentation](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)
+- [httpx Documentation](https://www.python-httpx.org/)
+- [Scrapy Framework](https://scrapy.org/) (for advanced scraping)
+- [Web Scraping Best Practices](https://www.scrapingbee.com/blog/web-scraping-best-practices/)
+
+## 🎓 Learning More
+
+For the live demo, we use mock data stored in:
+- `frontend/src/data/mockProducts.ts` - Product data with prices
+
+This provides a fast, reliable demo without the complexity of real-time scraping.
 
 ---
 
-**נבנה עם ❤️ לקהילה הישראלית**
+**Note:** The live application at [https://saharhalili95.github.io/price-comparison-platform/](https://saharhalili95.github.io/price-comparison-platform/) uses mock data only. Real scraping is available when running the full backend locally.
