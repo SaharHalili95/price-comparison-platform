@@ -8,7 +8,7 @@ interface ProductCardProps {
 export default function ProductCard({ product, onViewDetails }: ProductCardProps) {
   const formatPrice = (price: number | undefined) => {
     if (!price) return 'N/A';
-    return `$${price.toFixed(2)}`;
+    return `₪${price.toLocaleString('he-IL')}`;
   };
 
   const getSavingsPercentage = () => {
@@ -28,13 +28,14 @@ export default function ProductCard({ product, onViewDetails }: ProductCardProps
             src={product.image_url}
             alt={product.name}
             className="w-full h-full object-cover"
+            loading="lazy"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=No+Image';
+              (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-300">
-            <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
@@ -43,7 +44,7 @@ export default function ProductCard({ product, onViewDetails }: ProductCardProps
         {/* Savings Badge */}
         {savings > 0 && (
           <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-            Save {savings}%
+            חסכו {savings}%
           </div>
         )}
 
@@ -70,7 +71,7 @@ export default function ProductCard({ product, onViewDetails }: ProductCardProps
         {/* Price Range */}
         <div className="mt-auto">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-500">Price Range:</span>
+            <span className="text-sm text-gray-500">טווח מחירים:</span>
             <div className="flex items-center gap-2">
               <span className="text-lg font-bold text-green-600">
                 {formatPrice(product.lowest_price)}
@@ -85,13 +86,13 @@ export default function ProductCard({ product, onViewDetails }: ProductCardProps
           {/* Average Price */}
           {product.average_price && (
             <div className="text-xs text-gray-500 mb-3">
-              Avg: {formatPrice(product.average_price)}
+              ממוצע: {formatPrice(product.average_price)}
             </div>
           )}
 
           {/* Available Sources */}
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs text-gray-500">Available on:</span>
+            <span className="text-xs text-gray-500">זמין ב:</span>
             <div className="flex gap-1">
               {product.prices.filter(p => p.availability).map((price) => (
                 <span
@@ -108,8 +109,9 @@ export default function ProductCard({ product, onViewDetails }: ProductCardProps
           <button
             onClick={() => onViewDetails?.(product.id)}
             className="w-full btn-primary text-sm"
+            aria-label={`השוו מחירים עבור ${product.name}`}
           >
-            Compare Prices
+            השוו מחירים
           </button>
         </div>
       </div>

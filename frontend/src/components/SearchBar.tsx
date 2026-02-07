@@ -24,7 +24,7 @@ export default function SearchBar({ onSearch, loading = false }: SearchBarProps)
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search for products (e.g., wireless mouse, keyboard)..."
+              placeholder="חפשו מוצרים (לדוגמה: אייפון, אוזניות, מחשב נייד)..."
               className="input-field pr-10"
               disabled={loading}
             />
@@ -67,10 +67,10 @@ export default function SearchBar({ onSearch, loading = false }: SearchBarProps)
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                Searching...
+                מחפש...
               </span>
             ) : (
-              'Search'
+              'חיפוש'
             )}
           </button>
         </div>
@@ -78,8 +78,8 @@ export default function SearchBar({ onSearch, loading = false }: SearchBarProps)
 
       {/* Search suggestions */}
       <div className="mt-3 flex flex-wrap gap-2">
-        <span className="text-sm text-gray-600">Popular searches:</span>
-        {['mouse', 'keyboard', 'headphones', 'monitor'].map((suggestion) => (
+        <span className="text-sm text-gray-600">חיפושים פופולריים:</span>
+        {['iPhone', 'אוזניות', 'MacBook', 'PlayStation'].map((suggestion) => (
           <button
             key={suggestion}
             onClick={() => {

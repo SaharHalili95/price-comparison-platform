@@ -24,7 +24,7 @@ function App() {
       setSearchResults(results);
     } catch (err) {
       console.error('Search error:', err);
-      setError('Failed to search products. Please make sure the backend server is running.');
+      setError('החיפוש נכשל. נסו שוב מאוחר יותר.');
     } finally {
       setLoading(false);
     }
@@ -45,7 +45,7 @@ function App() {
       }
     } catch (err) {
       console.error('Refresh error:', err);
-      setError('Failed to refresh prices. Please try again.');
+      setError('רענון המחירים נכשל. נסו שוב.');
     } finally {
       setRefreshing(false);
     }
@@ -157,11 +157,8 @@ function App() {
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
             </svg>
             <div>
-              <h3 className="font-semibold text-red-900 mb-1">Error</h3>
+              <h3 className="font-semibold text-red-900 mb-1">שגיאה</h3>
               <p className="text-sm text-red-700">{error}</p>
-              <p className="text-sm text-red-600 mt-2">
-                Make sure the backend is running: <code className="bg-red-100 px-2 py-0.5 rounded">uvicorn app.main:app --reload</code>
-              </p>
             </div>
           </div>
         </div>
@@ -175,7 +172,7 @@ function App() {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
-            <p className="text-gray-600">Searching products and comparing prices...</p>
+            <p className="text-gray-600">מחפש מוצרים ומשווה מחירים...</p>
           </div>
         </div>
       )}
@@ -190,7 +187,7 @@ function App() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            Back to Results
+            חזרה לתוצאות
           </button>
           <PriceComparisonTable product={selectedProduct} />
         </div>
@@ -202,7 +199,7 @@ function App() {
           {/* Results Header */}
           <div className="mb-6">
             <h3 className="text-xl font-semibold text-gray-900">
-              Found {searchResults.total_results} {searchResults.total_results === 1 ? 'result' : 'results'} for "{searchResults.query}"
+              נמצאו {searchResults.total_results} תוצאות עבור "{searchResults.query}"
             </h3>
           </div>
 
@@ -222,7 +219,7 @@ function App() {
               <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p className="text-gray-600">No products found. Try a different search term.</p>
+              <p className="text-gray-600">לא נמצאו מוצרים. נסו מילת חיפוש אחרת.</p>
             </div>
           )}
         </div>

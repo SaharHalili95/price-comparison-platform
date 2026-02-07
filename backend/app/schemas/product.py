@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, HttpUrl, validator
+from pydantic import BaseModel, Field, validator
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
@@ -15,7 +15,7 @@ class PriceInfo(BaseModel):
     """Price information from a specific source"""
     source: SourceEnum
     price: float = Field(..., gt=0, description="Price must be greater than 0")
-    currency: str = Field(default="USD", max_length=3)
+    currency: str = Field(default="₪", max_length=3)
     availability: bool = Field(default=True)
     url: Optional[str] = None
     last_updated: datetime = Field(default_factory=datetime.now)

@@ -21,7 +21,7 @@ async def lifespan(app: FastAPI):
     # Startup
     init_db()
     logger.info(f"🚀 {settings.API_TITLE} v{settings.API_VERSION} started!")
-    logger.info(f"📚 API Documentation: http://localhost:8000/docs")
+    logger.info("API Documentation available at /docs")
     yield
     # Shutdown
     logger.info("Application shutting down...")
@@ -37,7 +37,7 @@ app = FastAPI(
     This API provides endpoints to:
     * Search for products
     * Get product details with price comparisons
-    * Compare prices from multiple sources (Amazon, eBay, Walmart)
+    * Compare prices from multiple sources
 
     All price data is validated using Pydantic models for data integrity.
     """,
@@ -51,7 +51,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -87,6 +87,6 @@ if __name__ == "__main__":
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
-        port=8000,
+        port=settings.PORT,
         reload=settings.DEBUG
     )

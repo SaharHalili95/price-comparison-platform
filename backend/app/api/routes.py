@@ -1,10 +1,15 @@
-from fastapi import APIRouter, HTTPException, Query, BackgroundTasks
+import logging
+import os
+from datetime import datetime
 from typing import List, Optional
+
+from fastapi import APIRouter, HTTPException, Query, BackgroundTasks
+
 from app.schemas.product import ProductWithPrices, SearchResponse, PriceInfo
 from app.services.scraper import PriceScraper
 from app.data.products_database import search_products, get_products_by_category, get_categories, get_category_stats, get_all_products
-from datetime import datetime
-import os
+
+logger = logging.getLogger(__name__)
 
 # Import real scrapers if available
 try:
@@ -12,13 +17,13 @@ try:
     SCRAPERS_AVAILABLE = True
 except ImportError:
     SCRAPERS_AVAILABLE = False
-    print("[API] Warning: Real scrapers not available, using mock data")
+    logger.warning("Real scrapers not available, using mock data")
 
 router = APIRouter(prefix="/api", tags=["products"])
 mock_scraper = PriceScraper()
 
 # Use real scrapers if enabled via environment variable
-USE_REAL_SCRAPERS = os.getenv("USE_REAL_SCRAPERS", "false").lower() == "true"
+USE_REAL_SCRAPERS = os.getenv("USE_REAL_SCRAPERS", "false").lower() in ("true", "1", "yes")
 
 
 def get_scraper_manager():
@@ -44,42 +49,46 @@ async def search_products_endpoint(
 
     if use_real_data and SCRAPERS_AVAILABLE:
         # Use real scrapers
-        print(f"[API] Using REAL scrapers for query: {query}")
+        logger.info("Using REAL scrapers for query: %s", query)
 
-        with ScraperManager() as manager:
-            # Search all sites in parallel
-            scraper_results = manager.search_all_parallel(query, max_results_per_site=5)
+        try:
+            with ScraperManager() as manager:
+                # Search all sites in parallel
+                scraper_results = manager.search_all_parallel(query, max_results_per_site=5)
 
-            # Aggregate results
-            aggregated_products = manager.aggregate_results(scraper_results)
+                # Aggregate results
+                aggregated_products = manager.aggregate_results(scraper_results)
 
-            # Convert to API response format
-            products_with_prices = []
-            for idx, product in enumerate(aggregated_products[:10], start=1):  # Limit to 10
-                product_with_prices = ProductWithPrices(
-                    id=idx,
-                    name=product.get('name', ''),
-                    description=product.get('description'),
-                    category=product.get('category'),
-                    image_url=product.get('image_url'),
-                    created_at=datetime.now(),
-                    updated_at=datetime.now(),
-                    prices=product.get('prices', []),
-                    lowest_price=product.get('lowest_price'),
-                    highest_price=product.get('highest_price'),
-                    average_price=product.get('average_price')
+                # Convert to API response format
+                products_with_prices = []
+                for idx, product in enumerate(aggregated_products[:10], start=1):
+                    product_with_prices = ProductWithPrices(
+                        id=idx,
+                        name=product.get('name', ''),
+                        description=product.get('description'),
+                        category=product.get('category'),
+                        image_url=product.get('image_url'),
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
+                        prices=product.get('prices', []),
+                        lowest_price=product.get('lowest_price'),
+                        highest_price=product.get('highest_price'),
+                        average_price=product.get('average_price')
+                    )
+                    products_with_prices.append(product_with_prices)
+
+                return SearchResponse(
+                    query=query,
+                    total_results=len(products_with_prices),
+                    products=products_with_prices
                 )
-                products_with_prices.append(product_with_prices)
-
-            return SearchResponse(
-                query=query,
-                total_results=len(products_with_prices),
-                products=products_with_prices
-            )
+        except Exception as e:
+            logger.error("Real scraper failed for query '%s': %s", query, e)
+            raise HTTPException(status_code=502, detail="Failed to fetch prices from external sources")
 
     else:
         # Use mock data (fast for demo) with 3000 products database
-        print(f"[API] Using MOCK data for query: {query}, category: {category}")
+        logger.info("Using MOCK data for query: %s, category: %s", query, category)
 
         # Search in the large products database
         matching_products = search_products(query, category=category)
@@ -286,19 +295,23 @@ async def test_scrapers(query: str = Query("mouse", description="Test query")):
             detail="Real scrapers not available. Install required packages: beautifulsoup4, selenium, requests"
         )
 
-    with ScraperManager() as manager:
-        results = manager.search_all_parallel(query, max_results_per_site=3)
+    try:
+        with ScraperManager() as manager:
+            results = manager.search_all_parallel(query, max_results_per_site=3)
 
-        # Format results for response
-        formatted_results = {}
-        for scraper_name, products in results.items():
-            formatted_results[scraper_name] = {
-                "count": len(products),
-                "products": products[:3]  # Return top 3 from each
+            # Format results for response
+            formatted_results = {}
+            for scraper_name, products in results.items():
+                formatted_results[scraper_name] = {
+                    "count": len(products),
+                    "products": products[:3]  # Return top 3 from each
+                }
+
+            return {
+                "query": query,
+                "results": formatted_results,
+                "total_products": sum(len(p) for p in results.values())
             }
-
-        return {
-            "query": query,
-            "results": formatted_results,
-            "total_products": sum(len(p) for p in results.values())
-        }
+    except Exception as e:
+        logger.error("Scraper test failed for query '%s': %s", query, e)
+        raise HTTPException(status_code=502, detail="Scraper test failed")

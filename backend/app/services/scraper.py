@@ -43,7 +43,7 @@ class PriceScraper:
             price_info = PriceInfo(
                 source=source,
                 price=round(price, 2),
-                currency="USD",
+                currency="₪",
                 availability=availability,
                 url=self._generate_url(source, product_name),
                 last_updated=datetime.now()

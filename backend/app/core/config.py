@@ -8,7 +8,8 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./price_comparison.db"
     API_TITLE: str = "Smart Price Comparison Platform"
     API_VERSION: str = "1.0.0"
-    DEBUG: bool = True
+    DEBUG: bool = False
+    PORT: int = 8000
     CORS_ORIGINS: List[str] = ["http://localhost:5173", "http://localhost:3000"]
 
     class Config:
