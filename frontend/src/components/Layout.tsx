@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 
 interface LayoutProps {
   children: ReactNode;
@@ -7,6 +7,7 @@ interface LayoutProps {
 }
 
 export default function Layout({ children, onHome, onCategorySearch }: LayoutProps) {
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
       {/* Header */}
@@ -29,34 +30,45 @@ export default function Layout({ children, onHome, onCategorySearch }: LayoutPro
 
             <nav className="hidden md:flex items-center gap-6">
               <button onClick={onHome} className="text-gray-600 hover:text-blue-600 transition-colors font-medium">בית</button>
-              <div className="relative group">
-                <button className="text-gray-600 hover:text-blue-600 transition-colors font-medium flex items-center gap-1">
+              <div className="relative">
+                <button
+                  onClick={() => setCategoriesOpen(!categoriesOpen)}
+                  className="text-gray-600 hover:text-blue-600 transition-colors font-medium flex items-center gap-1"
+                >
                   קטגוריות
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className={`w-4 h-4 transition-transform ${categoriesOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                <div className="absolute left-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  {[
-                    { name: 'אלקטרוניקה', icon: '💻' },
-                    { name: 'מחשבים', icon: '🖥️' },
-                    { name: 'אופנה', icon: '👕' },
-                    { name: 'בית וגן', icon: '🏠' },
-                    { name: 'ספורט ובריאות', icon: '⚽' },
-                    { name: 'ילדים ותינוקות', icon: '🍼' },
-                    { name: 'מזון ושתייה', icon: '🍕' },
-                    { name: 'טיפוח ויופי', icon: '💄' },
-                  ].map((cat) => (
-                    <button
-                      key={cat.name}
-                      onClick={() => onCategorySearch?.(cat.name)}
-                      className="w-full text-right px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors flex items-center gap-2 first:rounded-t-xl last:rounded-b-xl"
-                    >
-                      <span>{cat.icon}</span>
-                      <span>{cat.name}</span>
-                    </button>
-                  ))}
-                </div>
+                {categoriesOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setCategoriesOpen(false)} />
+                    <div className="absolute right-0 top-full mt-1 w-52 bg-white rounded-xl shadow-xl border border-gray-100 z-50 py-1">
+                      {[
+                        { name: 'אלקטרוניקה', icon: '💻' },
+                        { name: 'מחשבים', icon: '🖥️' },
+                        { name: 'אופנה', icon: '👕' },
+                        { name: 'בית וגן', icon: '🏠' },
+                        { name: 'ספורט ובריאות', icon: '⚽' },
+                        { name: 'ילדים ותינוקות', icon: '🍼' },
+                        { name: 'מזון ושתייה', icon: '🍕' },
+                        { name: 'טיפוח ויופי', icon: '💄' },
+                      ].map((cat) => (
+                        <button
+                          key={cat.name}
+                          onClick={() => {
+                            onCategorySearch?.(cat.name);
+                            setCategoriesOpen(false);
+                          }}
+                          className="w-full text-right px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors flex items-center gap-2"
+                        >
+                          <span>{cat.icon}</span>
+                          <span>{cat.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
               <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-200 text-sm font-semibold">
                 התחבר
