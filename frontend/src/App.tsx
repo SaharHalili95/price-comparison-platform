@@ -64,8 +64,15 @@ function App() {
     setSelectedProduct(null);
   };
 
+  const handleHome = () => {
+    setSearchResults(null);
+    setSelectedProduct(null);
+    setError(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <Layout>
+    <Layout onHome={handleHome} onCategorySearch={handleSearch}>
       {/* Hero Section */}
       <div className="text-center mb-12 relative">
         {/* Floating Decorative Elements */}
