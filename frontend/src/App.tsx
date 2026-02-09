@@ -87,7 +87,7 @@ function App() {
             <span className="text-gray-900">וחסכו כסף חכם</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            חפשו כל מוצר וקבלו השוואת מחירים מיידית מ-Amazon, eBay ו-Walmart
+            חפשו כל מוצר וקבלו השוואת מחירים מיידית מ-KSP, Bug ו-Zap
             <br />
             כדי למצוא את העסקה הכי טובה בשוק 🚀
           </p>

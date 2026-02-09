@@ -1,7 +1,7 @@
 export enum SourceEnum {
-  AMAZON = "Amazon",
-  EBAY = "eBay",
-  WALMART = "Walmart"
+  KSP = "KSP",
+  BUG = "Bug",
+  ZAP = "Zap"
 }
 
 export interface PriceInfo {
