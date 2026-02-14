@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 
 // In-memory cache shared across all instances
 const imageCache = new Map<string, string | null>();
-const STORAGE_KEY = 'product-img-cache-v2';
+const STORAGE_KEY = 'product-img-cache-v3';
 
 // Load cache from localStorage on module init
 try {
@@ -32,27 +32,28 @@ function extractSearchQuery(name: string): string {
   return '';
 }
 
-// Fetch product image from Wikipedia
+// Fetch product image from Wikimedia Commons (free image database)
 async function fetchImage(productName: string): Promise<string | null> {
   const query = extractSearchQuery(productName);
   if (!query) return null;
 
   try {
-    const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*&srlimit=1`;
-    const searchRes = await fetch(searchUrl);
-    if (!searchRes.ok) return null;
-    const searchData = await searchRes.json();
+    const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=400&format=json&origin=*`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
 
-    const results = searchData?.query?.search;
-    if (!results?.length) return null;
+    const pages = data?.query?.pages;
+    if (!pages) return null;
 
-    const title = encodeURIComponent(results[0].title);
-    const summaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${title}`;
-    const summaryRes = await fetch(summaryUrl);
-    if (!summaryRes.ok) return null;
-    const summaryData = await summaryRes.json();
-
-    return summaryData?.thumbnail?.source || null;
+    // Find first valid image (skip SVG/STL files)
+    for (const page of Object.values(pages) as any[]) {
+      const thumb = page?.imageinfo?.[0]?.thumburl;
+      if (thumb && !thumb.endsWith('.svg') && !thumb.endsWith('.stl')) {
+        return thumb;
+      }
+    }
+    return null;
   } catch {
     return null;
   }
