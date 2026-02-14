@@ -1,84 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-
-// In-memory cache shared across all instances
-const imageCache = new Map<string, string | null>();
-const STORAGE_KEY = 'product-img-cache-v3';
-
-// Load cache from localStorage on module init
-try {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    const entries: Record<string, string> = JSON.parse(saved);
-    for (const [k, v] of Object.entries(entries)) {
-      imageCache.set(k, v);
-    }
-  }
-} catch { /* ignore */ }
-
-function saveCache() {
-  try {
-    const obj: Record<string, string> = {};
-    imageCache.forEach((v, k) => { if (v) obj[k] = v; });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-  } catch { /* ignore */ }
-}
-
-// Extract English brand/model keywords from a product name
-function extractSearchQuery(name: string): string {
-  const english = name.match(/[A-Za-z][A-Za-z0-9.'+\-]*/g) || [];
-  if (english.length > 0) {
-    return english.slice(0, 4).join(' ');
-  }
-  return '';
-}
-
-// Fetch product image from Wikimedia Commons (free image database)
-async function fetchImage(productName: string): Promise<string | null> {
-  const query = extractSearchQuery(productName);
-  if (!query) return null;
-
-  try {
-    const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=400&format=json&origin=*`;
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const data = await res.json();
-
-    const pages = data?.query?.pages;
-    if (!pages) return null;
-
-    // Find first valid image (skip SVG/STL files)
-    for (const page of Object.values(pages) as any[]) {
-      const thumb = page?.imageinfo?.[0]?.thumburl;
-      if (thumb && !thumb.endsWith('.svg') && !thumb.endsWith('.stl')) {
-        return thumb;
-      }
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-// Queue to limit concurrent requests
-const queue: (() => void)[] = [];
-let running = 0;
-const MAX_CONCURRENT = 3;
-
-function enqueue(fn: () => Promise<void>) {
-  const run = async () => {
-    running++;
-    await fn();
-    running--;
-    if (queue.length > 0) {
-      const next = queue.shift()!;
-      next();
-    }
-  };
-  if (running < MAX_CONCURRENT) {
-    run();
-  } else {
-    queue.push(run);
-  }
+interface ProductImageProps {
+  productName: string;
+  fallbackUrl: string;
+  alt: string;
+  className?: string;
 }
 
 // Generate a consistent color from a string
@@ -88,91 +12,69 @@ function nameToColor(name: string): string {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
   const h = Math.abs(hash) % 360;
-  return `hsl(${h}, 35%, 25%)`;
+  return `hsl(${h}, 30%, 92%)`;
 }
 
-interface ProductImageProps {
-  productName: string;
-  fallbackUrl: string;
-  alt: string;
-  className?: string;
+function nameToAccent(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const h = Math.abs(hash) % 360;
+  return `hsl(${h}, 40%, 45%)`;
 }
 
-export default function ProductImage({ productName, alt }: ProductImageProps) {
-  const [imgUrl, setImgUrl] = useState<string | null>(() => {
-    const cached = imageCache.get(productName);
-    return cached || null;
-  });
-  const [imgLoaded, setImgLoaded] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const fetchedRef = useRef(false);
-
-  useEffect(() => {
-    if (imageCache.has(productName)) {
-      const cached = imageCache.get(productName);
-      if (cached) setImgUrl(cached);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !fetchedRef.current) {
-          fetchedRef.current = true;
-          observer.disconnect();
-
-          enqueue(async () => {
-            const url = await fetchImage(productName);
-            imageCache.set(productName, url);
-            saveCache();
-            if (url) setImgUrl(url);
-          });
-        }
-      },
-      { rootMargin: '200px' }
-    );
-
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [productName]);
-
+export default function ProductImage({ productName }: ProductImageProps) {
   const bgColor = nameToColor(productName);
+  const accentColor = nameToAccent(productName);
 
   // Extract brand name for display
   const brandMatch = productName.match(/[A-Za-z][A-Za-z0-9.'+\-]*/);
   const brand = brandMatch ? brandMatch[0] : '';
 
   return (
-    <div ref={containerRef} className="relative w-full h-full overflow-hidden">
-      {/* Always-visible text fallback */}
-      <div
-        className="absolute inset-0 flex flex-col items-center justify-center p-3 text-center"
-        style={{ backgroundColor: bgColor }}
-      >
+    <div className="relative w-full h-full overflow-hidden" style={{ backgroundColor: bgColor }}>
+      <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center gap-2">
+        {/* Camera icon */}
+        <svg
+          className="w-10 h-10 opacity-30"
+          style={{ color: accentColor }}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+          />
+        </svg>
+
+        {/* Brand name */}
         {brand && (
-          <span className="text-white/90 text-lg font-bold mb-1 drop-shadow">{brand}</span>
+          <span
+            className="text-sm font-bold opacity-60"
+            style={{ color: accentColor }}
+          >
+            {brand}
+          </span>
         )}
-        <span className="text-white/70 text-xs leading-tight line-clamp-2 max-w-[90%]">
-          {productName}
+
+        {/* Coming soon text */}
+        <span
+          className="text-xs opacity-40"
+          style={{ color: accentColor }}
+        >
+          תמונה תעלה בקרוב
         </span>
       </div>
-
-      {/* Real image from Wikipedia (fades in on top when loaded) */}
-      {imgUrl && (
-        <img
-          src={imgUrl}
-          alt={alt}
-          className={`absolute inset-0 w-full h-full object-contain bg-white transition-opacity duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
-          loading="lazy"
-          onLoad={() => setImgLoaded(true)}
-          onError={() => {
-            setImgUrl(null);
-            setImgLoaded(false);
-          }}
-        />
-      )}
     </div>
   );
 }
