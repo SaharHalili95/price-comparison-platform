@@ -13,9 +13,9 @@ class TestSourceEnum:
 
     def test_source_enum_values(self):
         """Test that all source values exist."""
-        assert SourceEnum.AMAZON == "Amazon"
-        assert SourceEnum.EBAY == "eBay"
-        assert SourceEnum.WALMART == "Walmart"
+        assert SourceEnum.KSP == "KSP"
+        assert SourceEnum.BUG == "Bug"
+        assert SourceEnum.ZAP == "Zap"
 
 
 class TestPriceInfoModel:
@@ -24,37 +24,37 @@ class TestPriceInfoModel:
     def test_create_price_info(self):
         """Test creating a price info object."""
         price = PriceInfo(
-            source=SourceEnum.AMAZON,
+            source=SourceEnum.KSP,
             price=99.99,
-            url="https://amazon.com/product"
+            url="https://ksp.co.il/web/item/12345"
         )
-        assert price.source == SourceEnum.AMAZON
+        assert price.source == SourceEnum.KSP
         assert price.price == 99.99
-        assert price.url == "https://amazon.com/product"
+        assert price.url == "https://ksp.co.il/web/item/12345"
         assert price.availability is True  # default
 
     def test_price_info_with_all_fields(self):
         """Test price info with all fields."""
         price = PriceInfo(
-            source=SourceEnum.EBAY,
+            source=SourceEnum.BUG,
             price=50.0,
-            currency="USD",
+            currency="₪",
             availability=False,
-            url="https://ebay.com/item"
+            url="https://www.bug.co.il/item/12345"
         )
-        assert price.source == SourceEnum.EBAY
+        assert price.source == SourceEnum.BUG
         assert price.price == 50.0
-        assert price.currency == "USD"
+        assert price.currency == "₪"
         assert price.availability is False
 
     def test_price_must_be_positive(self):
         """Test that price must be positive."""
         with pytest.raises(ValueError):
-            PriceInfo(source=SourceEnum.AMAZON, price=-10.0)
+            PriceInfo(source=SourceEnum.KSP, price=-10.0)
 
     def test_price_rounds_to_two_decimals(self):
         """Test that price is rounded to two decimals."""
-        price = PriceInfo(source=SourceEnum.AMAZON, price=99.999)
+        price = PriceInfo(source=SourceEnum.KSP, price=99.999)
         assert price.price == 100.0
 
 
@@ -65,16 +65,15 @@ class TestProductWithPricesModel:
         """Test creating a product with prices."""
         now = datetime.now()
         prices = [
-            PriceInfo(source=SourceEnum.AMAZON, price=100.0),
-            PriceInfo(source=SourceEnum.EBAY, price=90.0),
+            PriceInfo(source=SourceEnum.KSP, price=100.0),
+            PriceInfo(source=SourceEnum.BUG, price=90.0),
         ]
 
         product = ProductWithPrices(
             id=1,
-            name="Test Product",
-            description="A test product",
-            category="Electronics",
-            image_url="https://example.com/image.jpg",
+            name="Samsung Galaxy S24 Ultra",
+            description="סמארטפון דגל",
+            category="אלקטרוניקה",
             created_at=now,
             updated_at=now,
             prices=prices,
@@ -84,7 +83,7 @@ class TestProductWithPricesModel:
         )
 
         assert product.id == 1
-        assert product.name == "Test Product"
+        assert product.name == "Samsung Galaxy S24 Ultra"
         assert len(product.prices) == 2
         assert product.lowest_price == 90.0
         assert product.highest_price == 100.0
@@ -94,9 +93,9 @@ class TestProductWithPricesModel:
         """Test product price statistics are calculated correctly."""
         now = datetime.now()
         prices = [
-            PriceInfo(source=SourceEnum.AMAZON, price=100.0),
-            PriceInfo(source=SourceEnum.EBAY, price=200.0),
-            PriceInfo(source=SourceEnum.WALMART, price=150.0),
+            PriceInfo(source=SourceEnum.KSP, price=100.0),
+            PriceInfo(source=SourceEnum.BUG, price=200.0),
+            PriceInfo(source=SourceEnum.ZAP, price=150.0),
         ]
 
         product = ProductWithPrices(

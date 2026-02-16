@@ -5,10 +5,10 @@ from enum import Enum
 
 
 class SourceEnum(str, Enum):
-    """Available price sources"""
-    AMAZON = "Amazon"
-    EBAY = "eBay"
-    WALMART = "Walmart"
+    """Available price sources - Israeli stores"""
+    KSP = "KSP"
+    BUG = "Bug"
+    ZAP = "Zap"
 
 
 class PriceInfo(BaseModel):
@@ -29,12 +29,12 @@ class PriceInfo(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "source": "Amazon",
-                "price": 29.99,
-                "currency": "USD",
+                "source": "KSP",
+                "price": 299.90,
+                "currency": "₪",
                 "availability": True,
-                "url": "https://amazon.com/product/123",
-                "last_updated": "2024-01-12T10:30:00"
+                "url": "https://ksp.co.il/web/item/12345",
+                "last_updated": "2026-01-12T10:30:00"
             }
         }
 
@@ -77,24 +77,23 @@ class ProductWithPrices(ProductResponse):
         json_schema_extra = {
             "example": {
                 "id": 1,
-                "name": "Wireless Mouse",
-                "description": "Ergonomic wireless mouse with USB receiver",
-                "category": "Electronics",
-                "image_url": "https://example.com/mouse.jpg",
-                "created_at": "2024-01-12T10:00:00",
-                "updated_at": "2024-01-12T10:00:00",
+                "name": "Samsung Galaxy S24 Ultra",
+                "description": "סמארטפון דגל עם מסך 6.8 אינץ'",
+                "category": "אלקטרוניקה",
+                "created_at": "2026-01-12T10:00:00",
+                "updated_at": "2026-01-12T10:00:00",
                 "prices": [
                     {
-                        "source": "Amazon",
-                        "price": 29.99,
-                        "currency": "USD",
+                        "source": "KSP",
+                        "price": 3999.0,
+                        "currency": "₪",
                         "availability": True,
-                        "url": "https://amazon.com/mouse"
+                        "url": "https://ksp.co.il/web/item/12345"
                     }
                 ],
-                "lowest_price": 25.99,
-                "highest_price": 32.99,
-                "average_price": 29.32
+                "lowest_price": 3799.0,
+                "highest_price": 4199.0,
+                "average_price": 3999.0
             }
         }
 

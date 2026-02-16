@@ -10,7 +10,11 @@ class Settings(BaseSettings):
     API_VERSION: str = "1.0.0"
     DEBUG: bool = False
     PORT: int = 8000
-    CORS_ORIGINS: List[str] = ["http://localhost:5173", "http://localhost:3000"]
+    CORS_ORIGINS: List[str] = [
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://saharhalili95.github.io",
+    ]
 
     class Config:
         env_file = ".env"

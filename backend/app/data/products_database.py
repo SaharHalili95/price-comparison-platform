@@ -1,244 +1,900 @@
 """
-Large products database with 3000+ products across multiple categories
+Product database for the price comparison platform.
+Auto-generated from TypeScript template files.
 """
 
-import random
+from typing import List, Dict, Optional
 
-# Product templates by category with English keywords
-CATEGORIES = {
-    "אלקטרוניקה": {
-        "brands": ["Apple", "Samsung", "Sony", "LG", "Philips", "HP", "Dell", "Lenovo", "Asus", "Acer"],
-        "products": [
-            {"he": "טלפון סלולרי", "en": "phone smartphone mobile cellphone"},
-            {"he": "מחשב נייד", "en": "laptop notebook computer"},
-            {"he": "טאבלט", "en": "tablet ipad"},
-            {"he": "אוזניות", "en": "headphones earphones earbuds headset"},
-            {"he": "רמקול Bluetooth", "en": "speaker bluetooth wireless"},
-            {"he": "מסך מחשב", "en": "monitor display screen"},
-            {"he": "מקלדת", "en": "keyboard"},
-            {"he": "עכבר", "en": "mouse"},
-            {"he": "מצלמת רשת", "en": "webcam camera"},
-            {"he": "מטען נייד", "en": "powerbank charger portable"},
-            {"he": "כונן חיצוני", "en": "external drive harddrive hdd"},
-            {"he": "זיכרון USB", "en": "usb flash drive stick"},
-            {"he": "כרטיס זיכרון", "en": "memory card sd microsd"},
-            {"he": "מתאם USB-C", "en": "adapter usb-c hub"},
-            {"he": "מטען אלחוטי", "en": "wireless charger"},
-            {"he": "שעון חכם", "en": "smartwatch watch"},
-            {"he": "צמיד כושר", "en": "fitness tracker band"},
-            {"he": "טלוויזיה חכמה", "en": "smart tv television"},
-            {"he": "סאונדבר", "en": "soundbar speaker"},
-            {"he": "קונסולת משחקים", "en": "gaming console playstation xbox"},
-            {"he": "בקר משחק", "en": "controller gamepad joystick"},
-            {"he": "מצלמה דיגיטלית", "en": "camera digital"}
-        ]
-    },
-    "מחשבים": {
-        "brands": ["Intel", "AMD", "Nvidia", "Corsair", "Kingston", "Western Digital", "Seagate", "Logitech"],
-        "products": [
-            "מעבד", "כרטיס מסך", "לוח אם", "זיכרון RAM", "SSD", "HDD",
-            "ספק כח", "מארז מחשב", "מאוורר", "קירור נוזלי", "משחק מחשב",
-            "מקלדת גיימינג", "עכבר גיימינג", "משטח עכבר", "אוזניות גיימינג",
-            "מיקרופון", "מצלמת רשת HD", "כיסא גיימינג", "שולחן גיימינג"
-        ]
-    },
-    "בית וגן": {
-        "brands": ["Ikea", "Xiaomi", "Philips", "Osram", "Bosch", "Black&Decker", "Makita"],
-        "products": [
-            "נורת LED חכמה", "מנורת שולחן", "מנורת עמידה", "שואב אבק רובוטי",
-            "שואב אבק אלחוטי", "מכונת כביסה", "מייבש כביסה", "מדיח כלים",
-            "מקרר", "תנור חימום", "מזגן", "מפזר ריח", "מטהר אוויר",
-            "מכשיר אדים", "מאוורר", "מנורת קריאה", "גריל חשמלי",
-            "מכונת קפה", "קומקום חשמלי", "טוסטר", "מיקסר"
-        ]
-    },
-    "ספורט ובריאות": {
-        "brands": ["Nike", "Adidas", "Under Armour", "Reebok", "Puma", "Fitbit", "Garmin"],
-        "products": [
-            "נעלי ריצה", "בגדי ספורט", "מזרן יוגה", "משקולות", "רצועות התנגדות",
-            "כדור פיזיו", "חבל קפיצה", "כפפות אימון", "חגורת כושר", "בקבוק שתייה",
-            "שעון ספורט", "אוזניות ספורט", "תיק ספורט", "מגן ברכיים",
-            "סוגר מרפק", "סוגר פרק כף יד", "רולר עיסוי", "כדור עיסוי"
-        ]
-    },
-    "אופנה": {
-        "brands": ["Zara", "H&M", "Mango", "Castro", "Fox", "Renuar", "Golf"],
-        "products": [
-            "חולצת טי שירט", "חולצה מכופתרת", "ג'ינס", "מכנסיים", "שמלה",
-            "חצאית", "ז'קט", "מעיל", "סווטשירט", "הודי", "נעליים",
-            "נעלי ספורט", "סנדלים", "מגפיים", "תיק יד", "תיק גב",
-            "ארנק", "חגורה", "כובע", "משקפי שמש", "שעון יד", "צמיד"
-        ]
-    },
-    "ילדים ותינוקות": {
-        "brands": ["Pampers", "Huggies", "Chicco", "Fisher-Price", "Lego", "Mattel"],
-        "products": [
-            "חיתולים", "מגבונים לחים", "קרם ישבן", "שמפו לתינוקות", "סבון רחצה",
-            "עגלת תינוק", "סלקל לרכב", "כיסא אוכל", "מיטת תינוק", "מזרן לתינוק",
-            "פעמון", "שלשלת לעגלה", "משחק התפתחות", "לגו", "בובה", "רכב צעצוע",
-            "פאזל", "משחק קופסה", "צעצוע אמבט", "מדחום תינוקות", "בקבוק הזנה"
-        ]
-    },
-    "מזון ושתייה": {
-        "brands": ["Osem", "Telma", "Elite", "Strauss", "Tnuva", "Coca Cola"],
-        "products": [
-            "שוקולד", "ביסקוויטים", "חטיף בריאות", "אגוזים", "פירות יבשים",
-            "דגני בוקר", "פסטה", "רוטב עגבניות", "שמן זית", "קפה",
-            "תה", "משקה קל", "מיץ פירות", "מים מינרלים", "חטיף חלבון",
-            "חמאת בוטנים", "ריבה", "דבש", "שוקולד למריחה", "דייסת שיבולת שועל"
-        ]
-    },
-    "טיפוח ויופי": {
-        "brands": ["L'Oreal", "Nivea", "Garnier", "Dove", "Maybelline", "Revlon"],
-        "products": [
-            "קרם פנים", "קרם לחות", "קרם יום", "קרם לילה", "סרום פנים",
-            "תחליב גוף", "מסכת פנים", "מים מיסליארים", "טונר", "קרם עיניים",
-            "שמפו", "מרכך שיער", "מסכת שיער", "ג'ל עיצוב", "ספריי שיער",
-            "אודם", "מסקרה", "צל עיניים", "ליינר", "מייק אפ", "קרם BB"
-        ]
-    }
-}
 
-def generate_products_database(total_products=3000):
-    """Generate a large database of products"""
+electronics_products: list[tuple[str, str, int]] = [
+    ('iPhone 15 Pro Max 256GB', 'iPhone 15 Pro Max עם מסך 6.7 אינץ׳, שבב A17 Pro, מצלמה טיטניום', 5299),
+    ('iPhone 15 Pro 128GB', 'iPhone 15 Pro עם מסך 6.1 אינץ׳, שבב A17 Pro', 4799),
+    ('iPhone 15 128GB', 'iPhone 15 עם מסך 6.1 אינץ׳, שבב A16 Bionic', 3499),
+    ('iPhone 15 Plus 256GB', 'iPhone 15 Plus עם מסך 6.7 אינץ׳, סוללה חזקה', 3999),
+    ('iPhone 14 128GB', 'iPhone 14 עם מסך 6.1 אינץ׳, שבב A15 Bionic', 2799),
+    ('Samsung Galaxy S24 Ultra 512GB', 'Galaxy S24 Ultra עם מסך 6.8 אינץ׳, Snapdragon 8 Gen 3, S Pen', 5199),
+    ('Samsung Galaxy S24+ 256GB', 'Galaxy S24+ עם מסך 6.7 אינץ׳, AI מובנה', 4299),
+    ('Samsung Galaxy S24 128GB', 'Galaxy S24 עם מסך 6.2 אינץ׳, Galaxy AI', 3299),
+    ('Samsung Galaxy S23 FE 128GB', 'Galaxy S23 FE עם מסך 6.4 אינץ׳, Snapdragon 8 Gen 1', 2199),
+    ('Samsung Galaxy Z Fold5 256GB', 'Galaxy Z Fold5 מתקפל עם מסך 7.6 אינץ׳', 6999),
+    ('Samsung Galaxy Z Flip5 256GB', 'Galaxy Z Flip5 מתקפל עם מסך חיצוני גדול', 3999),
+    ('Samsung Galaxy A54 128GB', 'Galaxy A54 עם מסך 6.4 אינץ׳ Super AMOLED', 1699),
+    ('Samsung Galaxy A34 128GB', 'Galaxy A34 עם מסך 6.6 אינץ׳, סוללה 5000mAh', 1299),
+    ('Samsung Galaxy A15 128GB', 'Galaxy A15 עם מסך 6.5 אינץ׳, סוללה 5000mAh', 699),
+    ('Google Pixel 8 Pro 256GB', 'Pixel 8 Pro עם מסך 6.7 אינץ׳, שבב Tensor G3, AI מתקדם', 3899),
+    ('Google Pixel 8 128GB', 'Pixel 8 עם מסך 6.2 אינץ׳, שבב Tensor G3', 2999),
+    ('Google Pixel 7a 128GB', 'Pixel 7a עם מסך 6.1 אינץ׳, מצלמה מעולה', 1899),
+    ('Xiaomi 14 Ultra 512GB', 'Xiaomi 14 Ultra עם מצלמת Leica, Snapdragon 8 Gen 3', 4499),
+    ('Xiaomi 14 256GB', 'Xiaomi 14 עם מסך 6.36 אינץ׳, Leica optics', 3299),
+    ('Xiaomi 13T Pro 256GB', 'Xiaomi 13T Pro עם מסך 6.67 אינץ׳, MediaTek Dimensity 9200+', 2499),
+    ('Xiaomi Redmi Note 13 Pro+ 256GB', 'Redmi Note 13 Pro+ עם מסך 6.67 אינץ׳ AMOLED, 200MP', 1599),
+    ('Xiaomi Redmi Note 13 128GB', 'Redmi Note 13 עם מסך 6.67 אינץ׳ AMOLED', 899),
+    ('Xiaomi Redmi 13C 128GB', 'Redmi 13C עם מסך 6.74 אינץ׳, סוללה 5000mAh', 549),
+    ('OnePlus 12 256GB', 'OnePlus 12 עם Snapdragon 8 Gen 3, טעינה 100W', 3499),
+    ('OnePlus Nord CE 3 Lite 128GB', 'OnePlus Nord CE 3 Lite עם מסך 6.72 אינץ׳', 1099),
+    ('Sony Xperia 1 V 256GB', 'Sony Xperia 1 V עם מסך 4K OLED 6.5 אינץ׳', 4999),
+    ('Motorola Edge 40 Pro 256GB', 'Edge 40 Pro עם Snapdragon 8 Gen 2, מסך 165Hz', 2799),
+    ('Nothing Phone (2) 256GB', 'Nothing Phone (2) עם Glyph Interface ייחודי', 2299),
+    ('Sony WH-1000XM5 אוזניות', 'אוזניות עם ביטול רעשים מתקדם, 30 שעות סוללה', 1399),
+    ('Sony WH-1000XM4 אוזניות', 'אוזניות עם ביטול רעשים, LDAC, 30 שעות סוללה', 999),
+    ('Apple AirPods Pro 2nd Gen', 'AirPods Pro דור 2 עם USB-C, ביטול רעשים אקטיבי', 999),
+    ('Apple AirPods 3rd Gen', 'AirPods דור 3 עם Spatial Audio', 699),
+    ('Apple AirPods Max', 'AirPods Max אוזניות over-ear עם ביטול רעשים', 2199),
+    ('Samsung Galaxy Buds2 Pro', 'Galaxy Buds2 Pro עם ANC, 360 Audio', 749),
+    ('Samsung Galaxy Buds FE', 'Galaxy Buds FE עם ביטול רעשים אקטיבי', 399),
+    ('JBL Tune 770NC', 'אוזניות אלחוטיות JBL עם ביטול רעשים, 70 שעות', 349),
+    ('JBL Live Pro 2 TWS', 'אוזניות True Wireless עם ANC, 40 שעות סוללה', 499),
+    ('JBL Flip 6 רמקול נייד', 'רמקול Bluetooth נייד עמיד למים IP67', 399),
+    ('JBL Charge 5 רמקול', 'רמקול Bluetooth עם Powerbank מובנה, 20 שעות', 599),
+    ('JBL Xtreme 3 רמקול', 'רמקול Bluetooth חזק עם סוללה 15 שעות', 999),
+    ('Marshall Emberton II', 'רמקול נייד Marshall עם צליל איקוני', 549),
+    ('Bose QuietComfort Ultra', 'אוזניות Bose עם ביטול רעשים מוביל', 1599),
+    ('Bose SoundLink Flex', 'רמקול נייד Bose עמיד למים', 499),
+    ('Beats Studio Pro', 'אוזניות Beats over-ear עם ANC ו-USB-C', 1299),
+    ('Beats Fit Pro', 'אוזניות Beats ספורטיביות עם ANC', 899),
+    ('iPad Pro 12.9" M2 256GB', 'iPad Pro עם שבב M2, מסך Liquid Retina XDR', 4599),
+    ('iPad Air M2 11" 128GB', 'iPad Air עם שבב M2, מסך 11 אינץ׳', 2799),
+    ('iPad 10th Gen 64GB', 'iPad דור 10 עם מסך 10.9 אינץ׳, USB-C', 1699),
+    ('iPad Mini 6th Gen 64GB', 'iPad Mini דור 6 עם מסך 8.3 אינץ׳, A15 Bionic', 2199),
+    ('Samsung Galaxy Tab S9 Ultra', 'Galaxy Tab S9 Ultra עם מסך 14.6 אינץ׳ AMOLED', 5499),
+    ('Samsung Galaxy Tab S9+ 256GB', 'Galaxy Tab S9+ עם מסך 12.4 אינץ׳', 4199),
+    ('Samsung Galaxy Tab S9 FE 128GB', 'Galaxy Tab S9 FE עם מסך 10.9 אינץ׳', 1799),
+    ('Samsung Galaxy Tab A9 64GB', 'Galaxy Tab A9 עם מסך 8.7 אינץ׳', 699),
+    ('Lenovo Tab P12 128GB', 'Lenovo Tab P12 עם מסך 12.7 אינץ׳ 2K', 1499),
+    ('Apple Watch Ultra 2', 'Apple Watch Ultra 2 עם GPS + Cellular, 49mm טיטניום', 3499),
+    ('Apple Watch Series 9 45mm', 'Apple Watch Series 9 עם שבב S9, Double Tap', 1899),
+    ('Apple Watch SE 2nd Gen 40mm', 'Apple Watch SE דור 2 עם מסך OLED', 1099),
+    ('Samsung Galaxy Watch 6 Classic 47mm', 'Galaxy Watch 6 Classic עם Bezel מסתובב', 1699),
+    ('Samsung Galaxy Watch 6 44mm', 'Galaxy Watch 6 עם מסך Super AMOLED', 1299),
+    ('Garmin Venu 3', 'שעון חכם Garmin עם GPS מובנה, מדידת שינה', 1999),
+    ('Garmin Forerunner 265', 'שעון ריצה Garmin עם מסך AMOLED', 1799),
+    ('Xiaomi Watch S3', 'שעון חכם Xiaomi עם מסך AMOLED 1.43 אינץ׳', 599),
+    ('Amazfit GTR 4', 'שעון חכם Amazfit עם GPS כפול, 14 ימי סוללה', 799),
+    ('LG OLED65C3 טלוויזיה 65"', 'טלוויזיית OLED 4K עם AI, HDR10, Dolby Vision, 120Hz', 6999),
+    ('LG OLED55C3 טלוויזיה 55"', 'טלוויזיית OLED 4K עם webOS, Dolby Atmos', 4999),
+    ('LG OLED77G3 טלוויזיה 77"', 'טלוויזיית OLED Evo Gallery, מסך 77 אינץ׳', 12999),
+    ('Samsung QE65S95C OLED 65"', 'טלוויזיית Samsung OLED 4K, Neural Quantum Processor', 7499),
+    ('Samsung QE55QN85C Neo QLED 55"', 'טלוויזיית Neo QLED 4K, Mini LED', 4499),
+    ('Samsung QE75Q60C QLED 75"', 'טלוויזיית QLED 4K, מסך 75 אינץ׳', 4999),
+    ('Sony XR-65A80L OLED 65"', 'טלוויזיית Sony OLED 4K, Cognitive Processor XR', 7999),
+    ('Sony KD-55X85L LED 55"', 'טלוויזיית Sony LED 4K, Google TV', 3499),
+    ('TCL 65C845 Mini LED 65"', 'טלוויזיית TCL Mini LED 4K, Google TV', 3999),
+    ('Hisense 65U8K Mini LED 65"', 'טלוויזיית Hisense Mini LED 4K, VIDAA', 3799),
+    ('Hisense 55A6K LED 55"', 'טלוויזיית Hisense LED 4K, VIDAA Smart TV', 1699),
+    ('PlayStation 5 Slim 1TB', 'קונסולת PS5 Slim עם דיסק, כולל DualSense', 2299),
+    ('PlayStation 5 Digital Edition', 'קונסולת PS5 דיגיטלית ללא דיסק', 1799),
+    ('Xbox Series X 1TB', 'קונסולת Xbox Series X עם דיסק, 4K', 2199),
+    ('Xbox Series S 512GB', 'קונסולת Xbox Series S דיגיטלית', 1299),
+    ('Nintendo Switch OLED', 'Nintendo Switch OLED עם מסך 7 אינץ׳', 1499),
+    ('Nintendo Switch Lite', 'Nintendo Switch Lite נייד', 899),
+    ('Meta Quest 3 128GB', 'משקפי VR Meta Quest 3 עם Mixed Reality', 2299),
+    ('DualSense Controller לבן', 'בקר DualSense אלחוטי ל-PS5, לבן', 279),
+    ('DualSense Edge Controller', 'בקר DualSense Edge מקצועי ל-PS5', 899),
+    ('Xbox Wireless Controller', 'בקר Xbox אלחוטי, Carbon Black', 259),
+    ('SteelSeries Arctis Nova Pro', 'אוזניות גיימינג SteelSeries פרימיום', 1299),
+    ('HyperX Cloud III', 'אוזניות גיימינג HyperX עם מיקרופון', 449),
+    ('Logitech G Pro X Superlight 2', 'עכבר גיימינג אלחוטי, 60 גרם', 599),
+    ('Razer DeathAdder V3', 'עכבר גיימינג Razer ארגונומי', 349),
+    ('Canon EOS R6 Mark II Body', 'מצלמת Canon Full Frame ללא מראה, 24.2MP', 9999),
+    ('Canon EOS R50 + 18-45mm', 'מצלמת Canon APS-C ללא מראה, 24.2MP', 3499),
+    ('Sony Alpha A7 IV Body', 'מצלמת Sony Full Frame ללא מראה, 33MP', 9499),
+    ('Sony Alpha A6700 Body', 'מצלמת Sony APS-C ללא מראה, 26MP', 5999),
+    ('Nikon Z8 Body', 'מצלמת Nikon Full Frame ללא מראה, 45.7MP', 15999),
+    ('GoPro Hero 12 Black', 'מצלמת אקסטרים GoPro 5.3K, עמידה למים', 1799),
+    ('DJI Mini 4 Pro', 'רחפן DJI עם מצלמה 4K, 34 דקות טיסה', 3999),
+    ('DJI Mavic 3 Classic', 'רחפן DJI מקצועי עם מצלמת Hasselblad', 6499),
+    ('DJI Osmo Pocket 3', 'מצלמת כיס DJI עם גימבל 3 צירים', 2299),
+    ('SanDisk Extreme Pro 1TB microSD', 'כרטיס זיכרון microSD 1TB, מהירות 200MB/s', 499),
+    ('Samsung EVO Select 512GB microSD', 'כרטיס זיכרון Samsung 512GB, U3, V30', 199),
+    ('Anker 737 PowerCore 24K', 'מטען נייד Anker 24,000mAh, 140W', 499),
+    ('Anker Nano II 65W מטען', 'מטען USB-C 65W קומפקטי', 179),
+    ('Belkin BoostCharge Pro 3-in-1', 'תחנת טעינה אלחוטית 3 ב-1 עם MagSafe', 549),
+]
+
+computers_products: list[tuple[str, str, int]] = [
+    ('MacBook Air M3 15" 16GB 512GB', 'MacBook Air עם שבב M3, מסך Liquid Retina 15.3 אינץ׳', 6299),
+    ('MacBook Air M3 13" 8GB 256GB', 'MacBook Air עם שבב M3, מסך 13.6 אינץ׳', 4699),
+    ('MacBook Pro M3 14" 18GB 512GB', 'MacBook Pro עם שבב M3 Pro, מסך Liquid Retina XDR', 8499),
+    ('MacBook Pro M3 Max 16" 36GB 1TB', 'MacBook Pro עם שבב M3 Max, מסך 16.2 אינץ׳', 14999),
+    ('MacBook Pro M3 14" 8GB 512GB', 'MacBook Pro עם שבב M3 בסיסי, 14 אינץ׳', 6499),
+    ('iMac M3 24" 8GB 256GB', 'iMac עם שבב M3, מסך Retina 4.5K, 24 אינץ׳', 5999),
+    ('iMac M3 24" 16GB 512GB', 'iMac עם שבב M3, 16GB RAM, 512GB SSD', 7999),
+    ('Mac Mini M2 8GB 256GB', 'Mac Mini עם שבב M2, קומפקטי וחזק', 2499),
+    ('Mac Mini M2 Pro 16GB 512GB', 'Mac Mini עם שבב M2 Pro, ביצועים מקצועיים', 5499),
+    ('Mac Studio M2 Max 32GB 512GB', 'Mac Studio עם שבב M2 Max לעריכה מקצועית', 8999),
+    ('Mac Pro M2 Ultra', 'Mac Pro עם שבב M2 Ultra, מחשב עבודה מקצועי', 29999),
+    ('Dell XPS 15 i7 16GB 512GB', 'Dell XPS 15 עם Core i7, מסך 15.6 אינץ׳ OLED', 6499),
+    ('Dell XPS 13 Plus i7 16GB 512GB', 'Dell XPS 13 Plus אולטרה-דק, מסך OLED', 5499),
+    ('Dell Inspiron 16 i5 16GB 512GB', 'Dell Inspiron 16 עם Core i5 דור 13', 3299),
+    ('Dell Inspiron 15 i5 8GB 256GB', 'Dell Inspiron 15 לשימוש יומיומי', 2499),
+    ('Dell Latitude 5540 i7 16GB 512GB', 'Dell Latitude עסקי עם Core i7', 5999),
+    ('Lenovo ThinkPad X1 Carbon Gen 11', 'ThinkPad X1 Carbon עם Core i7, 14 אינץ׳ 2.8K', 7499),
+    ('Lenovo ThinkPad T14s Gen 4', 'ThinkPad T14s עם AMD Ryzen 7 PRO', 5499),
+    ('Lenovo IdeaPad Slim 5 14"', 'IdeaPad Slim 5 עם Core i5, מסך 2.8K OLED', 3299),
+    ('Lenovo IdeaPad 3 15" i5', 'IdeaPad 3 לשימוש יומיומי, Core i5', 2299),
+    ('Lenovo Yoga 9i 14" OLED', 'Yoga 9i מסך מגע OLED 2.8K, Core i7', 6999),
+    ('Lenovo Legion Pro 5 16" RTX 4070', 'Legion Pro 5 גיימינג, RTX 4070, Ryzen 7', 7499),
+    ('Lenovo Legion 5 15" RTX 4060', 'Legion 5 גיימינג, RTX 4060, Core i7', 5499),
+    ('HP Spectre x360 16" i7', 'HP Spectre x360 עם מסך OLED 3K, Core i7', 7299),
+    ('HP Envy x360 15" Ryzen 7', 'HP Envy x360 מסך מגע, AMD Ryzen 7', 3999),
+    ('HP Pavilion 15 i5 8GB 512GB', 'HP Pavilion 15 לשימוש יומיומי', 2699),
+    ('HP EliteBook 840 G10 i7', 'HP EliteBook עסקי פרימיום, Core i7', 6499),
+    ('HP Omen 16 RTX 4070', 'HP Omen גיימינג, RTX 4070, Core i7-13700H', 6999),
+    ('HP Victus 15 RTX 4050', 'HP Victus גיימינג, RTX 4050, Core i5', 3999),
+    ('ASUS ROG Strix G16 RTX 4070', 'ROG Strix G16 גיימינג, Core i9, 240Hz', 7999),
+    ('ASUS ROG Zephyrus G14 RTX 4060', 'ROG Zephyrus G14 קומפקטי, Ryzen 9', 6499),
+    ('ASUS VivoBook S 15 OLED', 'VivoBook S 15 עם מסך OLED, Core i7', 3799),
+    ('ASUS VivoBook 15 i5', 'VivoBook 15 לשימוש יומיומי, Core i5', 2299),
+    ('ASUS ZenBook 14 OLED', 'ZenBook 14 אולטרה-דק, מסך OLED 2.8K', 4499),
+    ('ASUS TUF Gaming F15 RTX 4060', 'TUF Gaming F15 עמיד, RTX 4060', 4999),
+    ('ASUS ProArt Studiobook 16 OLED', 'ProArt לעריכה מקצועית, מסך 3.2K', 8499),
+    ('Acer Nitro 5 RTX 4060', 'Acer Nitro 5 גיימינג, RTX 4060, 144Hz', 4499),
+    ('Acer Swift Go 14 OLED', 'Acer Swift Go 14 אולטרה-דק, OLED', 3499),
+    ('Acer Aspire 5 i5 15.6"', 'Acer Aspire 5 לשימוש יומיומי', 2199),
+    ('Acer Predator Helios 16 RTX 4080', 'Predator Helios 16 גיימינג פרימיום', 9999),
+    ('MSI Katana 15 RTX 4060', 'MSI Katana גיימינג, RTX 4060, 144Hz', 4299),
+    ('MSI Creator Z16 HX Studio', 'MSI Creator לעריכה, מסך Mini LED', 8999),
+    ('Microsoft Surface Laptop 5 i7', 'Surface Laptop 5 עם מסך מגע 13.5 אינץ׳', 5499),
+    ('Microsoft Surface Pro 9 i7', 'Surface Pro 9 טאבלט-מחשב, Core i7', 6299),
+    ('מסך Dell UltraSharp U2723QE 27" 4K', 'מסך 4K USB-C עם IPS Black, 27 אינץ׳', 2499),
+    ('מסך Dell S2722QC 27" 4K', 'מסך 4K עם USB-C, רמקולים מובנים', 1599),
+    ('מסך LG 27GP850-B 27" QHD 165Hz', 'מסך גיימינג Nano IPS, 1ms, HDR400', 1899),
+    ('מסך LG 34WN80C-B 34" UltraWide', 'מסך UltraWide QHD, USB-C, IPS', 2299),
+    ('מסך Samsung Odyssey G7 32" QHD', 'מסך גיימינג קעור 240Hz, 1ms', 2499),
+    ('מסך Samsung ViewFinity S8 27" 4K', 'מסך 4K מקצועי עם USB-C, IPS', 1999),
+    ('מסך ASUS ProArt PA278QV 27" QHD', 'מסך מקצועי לעיצוב, sRGB 100%', 1499),
+    ('מסך BenQ PD2705U 27" 4K', 'מסך מקצועי BenQ לעיצוב ועריכה', 2199),
+    ('מסך AOC 24G2SP 24" FHD 165Hz', 'מסך גיימינג 165Hz, 1ms, IPS', 699),
+    ('מסך Gigabyte M27Q 27" QHD 170Hz', 'מסך גיימינג IPS, KVM Switch', 1399),
+    ('מקלדת Logitech MX Keys S', 'מקלדת אלחוטית פרימיום עם תאורה', 499),
+    ('מקלדת Logitech K380', 'מקלדת Bluetooth קומפקטית, 3 מכשירים', 179),
+    ('מקלדת Keychron K2 Pro', 'מקלדת מכאנית אלחוטית 75%, RGB', 399),
+    ('מקלדת Razer BlackWidow V4', 'מקלדת גיימינג מכאנית, Razer Green', 599),
+    ('מקלדת Corsair K70 RGB Pro', 'מקלדת גיימינג מכאנית Cherry MX', 549),
+    ('עכבר Logitech MX Master 3S', 'עכבר אלחוטי פרימיום, 8000 DPI', 399),
+    ('עכבר Logitech MX Anywhere 3S', 'עכבר אלחוטי קומפקטי, USB-C', 299),
+    ('עכבר Logitech M720 Triathlon', 'עכבר אלחוטי רב-מכשירי', 249),
+    ('עכבר Microsoft Arc Mouse', 'עכבר נייד מתקפל, Bluetooth', 299),
+    ('מצלמת Logitech C920 HD Pro', 'מצלמת רשת Full HD 1080p', 299),
+    ('מצלמת Logitech Brio 4K', 'מצלמת רשת 4K Ultra HD, HDR', 799),
+    ('WD My Passport 2TB', 'כונן חיצוני נייד USB 3.0, 2TB', 299),
+    ('WD My Passport 4TB', 'כונן חיצוני נייד USB 3.0, 4TB', 449),
+    ('Samsung T7 Shield 1TB SSD', 'כונן SSD חיצוני עמיד, 1050MB/s', 399),
+    ('Samsung T7 2TB SSD', 'כונן SSD חיצוני 2TB, USB 3.2', 699),
+    ('Seagate Expansion 4TB', 'כונן חיצוני שולחני 4TB', 399),
+    ('Samsung 990 Pro 2TB NVMe', 'כונן SSD פנימי NVMe Gen4, 7450MB/s', 699),
+    ('WD Black SN850X 1TB NVMe', 'כונן SSD לגיימינג, NVMe Gen4', 399),
+    ('Kingston Fury Beast 32GB DDR5', 'זיכרון RAM DDR5 32GB (2x16GB) 5600MHz', 499),
+    ('Corsair Vengeance 32GB DDR5', 'זיכרון RAM DDR5 32GB (2x16GB) 6000MHz', 549),
+    ('TP-Link Archer AX73 נתב Wi-Fi 6', 'נתב Wi-Fi 6 AX5400 דו-ערוצי', 499),
+    ('TP-Link Deco XE75 Wi-Fi 6E Mesh', 'מערכת Mesh Wi-Fi 6E, 3 יחידות', 999),
+    ('ASUS RT-AX86U Pro נתב', 'נתב גיימינג Wi-Fi 6 AX5700', 799),
+    ('Synology DS224+ NAS', 'שרת NAS 2 מפרצים, Intel Celeron', 1699),
+    ('APC Back-UPS 1500VA אל-פסק', 'אל-פסק 1500VA/900W, LCD', 799),
+    ('Logitech StreamCam מצלמת סטרימינג', 'מצלמת סטרימינג Full HD 60fps', 599),
+    ('Elgato Wave:3 מיקרופון', 'מיקרופון USB קונדנסר לסטרימינג', 699),
+    ('Blue Yeti מיקרופון USB', 'מיקרופון USB מקצועי, 4 דפוסי קליטה', 549),
+    ('CalDigit TS4 Thunderbolt 4 Dock', 'תחנת עגינה Thunderbolt 4, 18 חיבורים', 1699),
+    ('Anker 575 USB-C Docking Station', 'תחנת עגינה USB-C 13-in-1', 899),
+    ('Logitech Combo Touch iPad Pro 12.9', 'מקלדת ומגן ל-iPad Pro עם TrackPad', 899),
+    ('Apple Magic Keyboard for iPad Pro', 'מקלדת Apple ל-iPad Pro עם TrackPad', 1399),
+    ('Apple Pencil 2nd Gen', 'עט Apple Pencil דור 2 ל-iPad Pro/Air', 549),
+    ('Samsung 49" Odyssey G9 OLED', 'מסך גיימינג אולטרה-רחב 49 אינץ׳ OLED', 5999),
+    ('Epson EcoTank L3250 מדפסת', 'מדפסת דיו רב-תכליתית עם טנקים', 699),
+    ('HP LaserJet M140we מדפסת', 'מדפסת לייזר שחור-לבן עם Wi-Fi', 549),
+    ('Brother MFC-L2800DW מדפסת', 'מדפסת לייזר רב-תכליתית, דו-צדדית', 999),
+    ('Canon PIXMA G3430 מדפסת', 'מדפסת דיו רב-תכליתית עם Wi-Fi', 599),
+    ('Apple Studio Display', 'מסך Apple 27 אינץ׳ 5K Retina', 6499),
+    ('LG UltraFine 27UN850-W 4K', 'מסך 4K עם USB-C 60W, HDR400', 1899),
+    ('TP-Link Tapo C200 מצלמת אבטחה', 'מצלמת Wi-Fi ביתית 1080p, סיבוב 360°', 149),
+    ('Google Nest Cam Indoor', 'מצלמת אבטחה חכמה לבית, 1080p', 499),
+    ('Ring Video Doorbell 4', 'פעמון דלת חכם עם מצלמה HD', 599),
+    ('Sonos Era 100 רמקול', 'רמקול חכם Sonos עם Wi-Fi ו-Bluetooth', 999),
+    ('Sonos Era 300 רמקול', 'רמקול Spatial Audio עם Dolby Atmos', 1899),
+    ('Amazon Echo Show 10', 'מסך חכם 10 אינץ׳ עם Alexa, מסתובב', 999),
+    ('Google Nest Hub Max', 'מסך חכם 10 אינץ׳ עם Google Assistant', 899),
+]
+
+fashion_products: list[tuple[str, str, int]] = [
+    ('Nike Air Max 90', 'נעלי Nike Air Max 90 קלאסיות, ריפוד אוויר', 549),
+    ('Nike Air Force 1 Low', 'נעלי Nike Air Force 1 לבן קלאסי', 449),
+    ('Nike Dunk Low', 'נעלי Nike Dunk Low רטרו', 499),
+    ('Nike Air Jordan 1 Mid', 'נעלי Air Jordan 1 Mid אייקוניות', 599),
+    ('Nike Pegasus 40', 'נעלי ריצה Nike Pegasus 40, Zoom Air', 549),
+    ('Nike Revolution 6', 'נעלי ריצה Nike לשימוש יומיומי', 299),
+    ('Nike Court Vision Low', 'נעלי Nike סניקרס קלאסיות', 349),
+    ('Adidas Ultraboost Light', 'נעלי ריצה Adidas עם Boost, קלות במיוחד', 799),
+    ('Adidas Stan Smith', 'נעלי Adidas Stan Smith קלאסיות לבן-ירוק', 449),
+    ('Adidas Superstar', 'נעלי Adidas Superstar עם Shell Toe', 449),
+    ('Adidas Gazelle', 'נעלי Adidas Gazelle רטרו', 429),
+    ('Adidas Samba OG', 'נעלי Adidas Samba קלאסיות', 449),
+    ('Adidas Forum Low', 'נעלי Adidas Forum Low בסגנון 80s', 499),
+    ('Adidas NMD R1', 'נעלי Adidas NMD עם Boost', 599),
+    ('New Balance 574', 'נעלי New Balance 574 קלאסיות', 449),
+    ('New Balance 990v6', 'נעלי New Balance 990 פרימיום Made in USA', 899),
+    ('New Balance 530', 'נעלי New Balance 530 רטרו', 449),
+    ('New Balance Fresh Foam X 1080v13', 'נעלי ריצה New Balance פרימיום', 699),
+    ('Puma RS-X3', 'נעלי Puma RS-X3 ספורטיביות', 449),
+    ('Puma Suede Classic', 'נעלי Puma Suede קלאסיות', 349),
+    ('Converse Chuck Taylor All Star', 'נעלי Converse קלאסיות גבוהות', 299),
+    ('Converse Chuck 70', 'נעלי Converse 70s פרימיום', 399),
+    ('Vans Old Skool', 'נעלי Vans Old Skool קלאסיות', 349),
+    ('Vans Sk8-Hi', 'נעלי Vans Sk8-Hi גבוהות', 379),
+    ('ASICS Gel-Kayano 30', 'נעלי ריצה ASICS עם תמיכה, Gel', 699),
+    ('ASICS Gel-Nimbus 25', 'נעלי ריצה ASICS ריפוד מקסימלי', 649),
+    ('Reebok Classic Leather', 'נעלי Reebok Classic עור לבן', 399),
+    ('Timberland 6-Inch Premium Boot', 'מגפי Timberland 6 אינץ׳ עמידים למים', 799),
+    ('Dr. Martens 1460', 'מגפי Dr. Martens 1460 קלאסיים 8 עיניות', 899),
+    ('Birkenstock Arizona', 'כפכפי Birkenstock Arizona קלאסיים', 399),
+    ('חולצת Polo Ralph Lauren', 'חולצת פולו Ralph Lauren כותנה פיקה', 399),
+    ('חולצת Tommy Hilfiger פולו', 'חולצת פולו Tommy Hilfiger קלאסית', 349),
+    ('חולצת Lacoste פולו', 'חולצת Lacoste L.12.12 קלאסית', 449),
+    ('חולצת Calvin Klein T-Shirt', 'חולצת טי Calvin Klein לוגו', 199),
+    ('חולצת Levi\'s Batwing Logo', 'חולצת טי Levi\'s עם לוגו', 149),
+    ('ג\'ינס Levi\'s 501 Original', 'ג\'ינס Levi\'s 501 גזרה ישרה קלאסי', 399),
+    ('ג\'ינס Levi\'s 511 Slim', 'ג\'ינס Levi\'s 511 גזרה צרה', 379),
+    ('ג\'ינס Lee Brooklyn Straight', 'ג\'ינס Lee Brooklyn גזרה ישרה', 299),
+    ('ג\'ינס Wrangler Texas', 'ג\'ינס Wrangler Texas קלאסי', 279),
+    ('ג\'ינס Tommy Hilfiger Denton', 'ג\'ינס Tommy Hilfiger גזרה ישרה', 449),
+    ('מעיל The North Face Thermoball', 'מעיל The North Face Thermoball מבודד', 899),
+    ('מעיל Columbia Powder Lite', 'מעיל Columbia מבודד קל משקל', 599),
+    ('מעיל Nike Windrunner', 'מעיל רוח Nike Windrunner קלאסי', 449),
+    ('מעיל Adidas Essentials Down', 'מעיל פוך Adidas Essentials', 599),
+    ('מעיל Patagonia Better Sweater', 'סווטשירט פליז Patagonia', 699),
+    ('סווטשירט Nike Sportswear Club', 'סווטשירט Nike קפוצ\'ון קלאסי', 299),
+    ('סווטשירט Adidas Essentials', 'סווטשירט Adidas עם 3 פסים', 249),
+    ('סווטשירט Champion Reverse Weave', 'סווטשירט Champion פרימיום', 349),
+    ('מכנסי Nike Tech Fleece', 'מכנסי טרנינג Nike Tech Fleece', 449),
+    ('מכנסי Adidas Tiro 23', 'מכנסי אימון Adidas עם 3 פסים', 249),
+    ('תיק Samsonite Proxis מזוודה 55cm', 'מזוודת עלייה Samsonite Proxis קשיחה', 1299),
+    ('תיק Samsonite Base Boost מזוודה 66cm', 'מזוודה בינונית Samsonite רכה', 599),
+    ('תיק American Tourister 55cm', 'מזוודת עלייה American Tourister', 399),
+    ('תיק גב Fjällräven Kånken', 'תיק גב Kånken קלאסי שוודי', 399),
+    ('תיק גב The North Face Borealis', 'תיק גב The North Face 28L', 449),
+    ('תיק גב Herschel Retreat', 'תיק גב Herschel Retreat קלאסי', 399),
+    ('תיק גב JanSport SuperBreak', 'תיק גב JanSport קלאסי', 199),
+    ('תיק צד Michael Kors Jet Set', 'תיק צד Michael Kors עור', 899),
+    ('תיק יד Coach Willow Tote', 'תיק יד Coach עור פרימיום', 1299),
+    ('חגורת Tommy Hilfiger עור', 'חגורת עור Tommy Hilfiger קלאסית', 249),
+    ('חגורת Calvin Klein עור', 'חגורת עור Calvin Klein דו-צדדית', 279),
+    ('ארנק Guess גברים', 'ארנק עור Guess לגברים', 199),
+    ('ארנק Tommy Hilfiger', 'ארנק עור Tommy Hilfiger', 249),
+    ('משקפי שמש Ray-Ban Aviator', 'משקפי שמש Ray-Ban Aviator קלאסיים', 699),
+    ('משקפי שמש Ray-Ban Wayfarer', 'משקפי שמש Ray-Ban Wayfarer', 699),
+    ('משקפי שמש Oakley Holbrook', 'משקפי שמש Oakley Holbrook ספורטיביים', 599),
+    ('משקפי שמש Polaroid PLD 2098/S', 'משקפי שמש Polaroid מקוטבות', 299),
+    ('שעון Casio G-Shock GA-2100', 'שעון Casio G-Shock CasiOak', 399),
+    ('שעון Casio F-91W', 'שעון Casio דיגיטלי קלאסי', 99),
+    ('שעון Daniel Wellington Classic', 'שעון Daniel Wellington 40mm', 599),
+    ('שעון Fossil Neutra Chronograph', 'שעון Fossil כרונוגרף עור', 699),
+    ('שעון Tommy Hilfiger Decker', 'שעון Tommy Hilfiger לגברים', 599),
+    ('שעון Michael Kors Bradshaw', 'שעון Michael Kors לנשים', 899),
+    ('כובע Nike Dri-FIT', 'כובע מצחייה Nike עם Dri-FIT', 129),
+    ('כובע New Era 9FORTY', 'כובע מצחייה New Era מתכוונן', 149),
+    ('צעיף Zara כותנה', 'צעיף Zara מכותנה רכה', 129),
+    ('כפפות The North Face Etip', 'כפפות The North Face חמות עם מגע מסך', 199),
+    ('גרביים Happy Socks 4-Pack', 'סט 4 זוגות גרביים Happy Socks צבעוניים', 149),
+    ('גרביים Nike Everyday 6-Pack', 'סט 6 זוגות גרביים Nike', 99),
+    ('בוקסרים Calvin Klein 3-Pack', 'סט 3 בוקסרים Calvin Klein כותנה', 199),
+    ('חזייה Calvin Klein Modern Cotton', 'חזייה Calvin Klein Modern Cotton', 199),
+    ('פיג\'מה Women\'secret סאטן', 'פיג\'מה סאטן Women\'secret', 249),
+    ('שמלת Zara midi', 'שמלת מידי Zara פרחונית', 299),
+    ('שמלת H&M מקסי', 'שמלת מקסי H&M פשתן', 249),
+    ('חצאית Mango A-Line', 'חצאית Mango גזרת A', 229),
+    ('בלייזר Zara Oversize', 'בלייזר Zara אוברסייז', 449),
+    ('מעיל גשם Rains', 'מעיל גשם Rains מינימליסטי עמיד למים', 499),
+    ('כפכפי Havaianas Top', 'כפכפי Havaianas Top ברזילאים', 99),
+    ('סנדלי Teva Original Universal', 'סנדלי Teva Original קלאסיים', 299),
+    ('נעלי בית UGG Scuffette II', 'נעלי בית UGG מפרווה', 449),
+    ('נעלי Crocs Classic Clog', 'נעלי Crocs Classic Clog קלאסיות', 249),
+    ('נעלי Skechers Go Walk 7', 'נעלי הליכה Skechers נוחות', 349),
+    ('מעיל גברים Zara בייסיק', 'מעיל Zara גברים קלאסי', 499),
+    ('חולצה מכופתרת H&M Slim Fit', 'חולצה מכופתרת H&M גזרה צרה', 149),
+    ('מכנסיים קצרים Nike Dri-FIT', 'מכנסיים קצרים Nike ספורטיביים', 199),
+    ('חצאית טניס Nike Court', 'חצאית טניס Nike Court Victory', 249),
+    ('שמלת ספורט Adidas', 'שמלת ספורט Adidas עם 3 פסים', 249),
+    ('תחתוני בגד ים Speedo', 'בגד ים Speedo Endurance+', 199),
+]
+
+home_garden_products: list[tuple[str, str, int]] = [
+    ('Dyson V15 Detect שואב אבק', 'שואב אבק אלחוטי עם טכנולוגיית לייזר, 60 דקות', 2499),
+    ('Dyson V12 Detect Slim', 'שואב אבק אלחוטי קל משקל, 60 דקות סוללה', 1999),
+    ('Dyson V8 Absolute', 'שואב אבק אלחוטי Dyson V8, 40 דקות סוללה', 1499),
+    ('Roborock S8 Pro Ultra', 'רובוט שואב ושוטף עם תחנת ריקון ושטיפה', 3999),
+    ('Roborock Q7 Max+', 'רובוט שואב ושוטף עם תחנת ריקון', 2499),
+    ('iRobot Roomba j7+', 'רובוט שואב iRobot עם זיהוי מכשולים', 2799),
+    ('iRobot Roomba i5+', 'רובוט שואב iRobot עם תחנת ריקון', 1799),
+    ('Xiaomi Robot Vacuum X10+', 'רובוט שואב ושוטף Xiaomi עם תחנה', 2299),
+    ('Dreame L10s Ultra', 'רובוט שואב ושוטף Dreame, תחנה חכמה', 2999),
+    ('Samsung Jet Bot AI+', 'רובוט שואב Samsung עם AI ומצלמה', 3499),
+    ('Nespresso Vertuo Next', 'מכונת קפה Nespresso Vertuo, 5 גדלים', 799),
+    ('Nespresso Vertuo Plus', 'מכונת קפה Nespresso Vertuo Plus דלוקס', 999),
+    ('Nespresso CitiZ', 'מכונת קפה Nespresso קומפקטית', 699),
+    ('De\'Longhi Magnifica S', 'מכונת אספרסו אוטומטית De\'Longhi', 1999),
+    ('De\'Longhi Dinamica Plus', 'מכונת אספרסו אוטומטית עם LatteCrema', 3499),
+    ('Breville Barista Express', 'מכונת אספרסו חצי-אוטומטית Breville', 2499),
+    ('Philips 3200 LatteGo', 'מכונת אספרסו אוטומטית Philips', 2299),
+    ('Jura E8 מכונת קפה', 'מכונת אספרסו אוטומטית Jura פרימיום', 4499),
+    ('Bosch Serie 6 מדיח כלים', 'מדיח כלים Bosch חצי-אינטגרלי, 14 מערכות', 3299),
+    ('Bosch Serie 4 מדיח כלים', 'מדיח כלים Bosch רחב, 12 מערכות', 2499),
+    ('Samsung מקרר דלת צרפתית 700L', 'מקרר Samsung דלת צרפתית עם מסך', 8999),
+    ('LG מקרר InstaView 638L', 'מקרר LG InstaView דלת בדלת', 7999),
+    ('Samsung מקרר דו-דלתי 525L', 'מקרר Samsung דו-דלתי, מקפיא תחתון', 4999),
+    ('Bosch מקרר דו-דלתי 505L', 'מקרר Bosch NoFrost, מקפיא תחתון', 4499),
+    ('LG מכונת כביסה 9 ק"ג', 'מכונת כביסה LG AI DD, 1400 סל"ד', 2999),
+    ('Samsung מכונת כביסה 8 ק"ג', 'מכונת כביסה Samsung EcoBubble', 2499),
+    ('Bosch מכונת כביסה 9 ק"ג', 'מכונת כביסה Bosch Serie 6, i-DOS', 3299),
+    ('LG מייבש כביסה 9 ק"ג', 'מייבש כביסה LG משאבת חום, A+++', 3499),
+    ('Samsung מייבש כביסה 8 ק"ג', 'מייבש כביסה Samsung משאבת חום', 2999),
+    ('Bosch מייבש כביסה 9 ק"ג', 'מייבש כביסה Bosch Serie 6', 3199),
+    ('Dyson Pure Cool מטהר אוויר', 'מטהר אוויר ומאוורר Dyson, HEPA', 2499),
+    ('Philips AC2889/10 מטהר אוויר', 'מטהר אוויר Philips, חדרים עד 79 מ"ר', 1499),
+    ('Xiaomi Air Purifier 4 Pro', 'מטהר אוויר Xiaomi, חדרים עד 60 מ"ר', 799),
+    ('Dyson Hot+Cool Formaldehyde', 'מטהר, מאוורר ומחמם Dyson', 2999),
+    ('Samsung מזגן עילי 1.5 כ"ס', 'מזגן Samsung WindFree, אינוורטר', 3999),
+    ('Electra Classic 170 מזגן', 'מזגן Electra 1.5 כ"ס, אינוורטר', 3499),
+    ('Tadiran Alpha Pro מזגן', 'מזגן Tadiran 1.5 כ"ס, אינוורטר', 3799),
+    ('Philips Hue Starter Kit', 'ערכת תאורה חכמה 3 נורות וגשר', 549),
+    ('Philips Hue White Ambiance 2-Pack', 'זוג נורות חכמות Philips Hue', 249),
+    ('Philips Hue Gradient Lightstrip 2M', 'פס לד חכם Philips Hue, 2 מטר', 699),
+    ('IKEA TRÅDFRI ערכת תאורה', 'ערכת תאורה חכמה IKEA עם שלט', 199),
+    ('Amazon Echo Dot 5th Gen', 'רמקול חכם עם Alexa, דור 5', 249),
+    ('Amazon Echo Show 5 3rd Gen', 'מסך חכם 5.5 אינץ׳ עם Alexa', 399),
+    ('Google Nest Mini', 'רמקול חכם Google קומפקטי', 199),
+    ('Google Nest Hub 2nd Gen', 'מסך חכם Google 7 אינץ׳', 449),
+    ('Apple HomePod Mini', 'רמקול חכם Apple עם Siri', 449),
+    ('Xiaomi Mi Smart Kettle Pro', 'קומקום חכם Xiaomi עם בקרת טמפרטורה', 199),
+    ('Philips OneBlade Pro QP6541', 'מכונת גילוח Philips OneBlade Pro', 299),
+    ('KitchenAid Artisan מיקסר', 'מיקסר KitchenAid Artisan 4.8L', 2499),
+    ('Kenwood kMix Stand Mixer', 'מיקסר Kenwood kMix 5L', 1499),
+    ('Philips Airfryer XXL HD9870', 'סיר טיגון באוויר חם Philips XXL', 999),
+    ('Ninja Foodi Max AG551', 'גריל ופריי אוויר חם Ninja', 899),
+    ('Tefal ActiFry Genius XL', 'סיר טיגון באוויר חם Tefal 1.7 ק"ג', 799),
+    ('Instant Pot Duo 7-in-1', 'סיר לחץ רב-תכליתי Instant Pot 6L', 499),
+    ('מגהץ Philips PerfectCare Elite', 'מגהץ קיטור Philips עם OptimalTEMP', 999),
+    ('Tefal Turbo Pro Anti-Calc מגהץ', 'מגהץ קיטור Tefal 2800W', 449),
+    ('Weber Spirit E-310 גריל גז', 'גריל גז Weber 3 מבערים', 3499),
+    ('Traeger Ironwood 885 מעשנה', 'מעשנת פלט Traeger עם WiFIRE', 5999),
+    ('מנורת שולחן Xiaomi Mi LED', 'מנורת שולחן LED חכמה, התאמת צבע', 149),
+    ('מנורת רצפה IKEA HEKTAR', 'מנורת רצפה IKEA מתכתית', 399),
+    ('מזרן Emma Original 160x200', 'מזרן Emma Original זוגי, קצף זיכרון', 2499),
+    ('מזרן Tempur Cloud 160x200', 'מזרן Tempur Cloud זוגי', 5999),
+    ('כרית Tempur Original M', 'כרית Tempur ארגונומית אורתופדית', 499),
+    ('סט מצעים 100% כותנה סאטן', 'סט מצעים זוגי כותנה סאטן 400TC', 399),
+    ('שמיכת פוך אווז 200x220', 'שמיכת פוך אווז טבעי, חורפית', 999),
+    ('כורסת IKEA POÄNG', 'כורסת IKEA POÄNG עם כרית', 699),
+    ('ספה פינתית 3 מושבים', 'ספה פינתית מרופדת בד, אפור', 4999),
+    ('שולחן אוכל עץ מלא 180cm', 'שולחן אוכל עץ אלון מלא, 6 סועדים', 3499),
+    ('שידת לילה עם מגירה', 'שידת לילה עץ מלא עם מגירה', 599),
+    ('ארון בגדים הזזה 200cm', 'ארון הזזה 2 דלתות עם מראה', 3999),
+    ('סט כלי מטבח Tefal Ingenio', 'סט 10 חלקים Tefal Ingenio, ניתנות להסרה', 799),
+    ('סט סכינים Zwilling Pro 7 חלקים', 'סט סכינים Zwilling גרמני, בלוק עץ', 1299),
+    ('מיקרוגל Samsung 23L', 'מיקרוגל Samsung 23 ליטר, 800W', 449),
+    ('טוסטר אובן Breville Smart Oven', 'טוסטר אובן Breville חכם, 10 פונקציות', 899),
+    ('בלנדר Vitamix E310', 'בלנדר Vitamix מקצועי 1400W', 1999),
+    ('מכונת לחם Panasonic SD-YR2540', 'מכונת לחם Panasonic אוטומטית', 799),
+    ('גלאי עשן Nest Protect', 'גלאי עשן וCO חכם Google Nest', 499),
+    ('מנעול חכם Yale Linus', 'מנעול חכם Yale עם Bluetooth', 899),
+    ('שעון קיר Karlsson Minimal', 'שעון קיר מינימליסטי 40cm', 249),
+    ('סט מגבות IKEA VINARN 4 חלקים', 'סט מגבות אמבטיה כותנה 100%', 199),
+    ('מתלה בגדים נירוסטה', 'מתלה כביסה נירוסטה מתקפל', 199),
+    ('סולם אלומיניום 3+1 שלבים', 'סולם אלומיניום Hailo מתקפל', 399),
+    ('ערכת כלי גינון 10 חלקים', 'ערכת כלי גינון Gardena מקצועית', 349),
+    ('גוזם דשא Bosch Rotak 37', 'מכסחת דשא חשמלית Bosch 1400W', 999),
+    ('צינור גינה מתכווץ 30M', 'צינור גינה מתכווץ 30 מטר עם ראש ריסוס', 149),
+    ('מפזר חום Delonghi 2500W', 'מפזר חום Delonghi שמן 11 צלעות', 599),
+    ('מאוורר Dyson Pure Cool', 'מאוורר Dyson ללא כנפיים עם מטהר', 1999),
+    ('שולחן כתיבה IKEA BEKANT 160x80', 'שולחן כתיבה IKEA מתכוונן חשמלי', 1999),
+    ('כיסא ארגונומי Herman Miller Aeron', 'כיסא משרדי Herman Miller Aeron פרימיום', 5499),
+    ('כיסא משרדי IKEA MARKUS', 'כיסא משרדי IKEA ארגונומי', 999),
+    ('ארגונית שולחן עבודה במבוק', 'ארגונית שולחן במבוק עם מגירות', 149),
+    ('סל כביסה במבוק', 'סל כביסה במבוק טבעי עם מכסה', 199),
+    ('מארגן נעליים 10 קומות', 'מארגן נעליים מתכת 10 קומות', 149),
+    ('סט קופסאות אחסון 6 חלקים', 'סט קופסאות אחסון שקופות עם מכסה', 129),
+    ('מראה קיר עגולה 60cm', 'מראה קיר עגולה מסגרת זהב', 299),
+    ('עציץ קרמיקה סט 3', 'סט 3 עציצי קרמיקה בגדלים שונים', 199),
+    ('שטיח סלון 200x300', 'שטיח סלון מודרני אפור, 200x300 ס"מ', 999),
+    ('וילון האפלה 140x250', 'וילון האפלה אפור כהה, 140x250 ס"מ', 249),
+]
+
+sports_products: list[tuple[str, str, int]] = [
+    ('אופני הרים Trek Marlin 7', 'אופני הרים Trek 29 אינץ׳, שלדת אלומיניום', 3999),
+    ('אופני הרים Specialized Rockhopper', 'אופני הרים Specialized 29 אינץ׳', 3499),
+    ('אופני כביש Giant Contend AR', 'אופני כביש Giant, שימנו Tiagra', 4999),
+    ('אופני עיר Cannondale Quick 5', 'אופני עיר Cannondale היברידי', 2999),
+    ('אופניים חשמליים Xiaomi QiCycle', 'אופניים חשמליים מתקפלים Xiaomi', 3499),
+    ('קורקינט חשמלי Xiaomi Pro 2', 'קורקינט חשמלי Xiaomi, טווח 45 ק"מ', 1999),
+    ('קורקינט חשמלי Segway Ninebot Max G30', 'קורקינט חשמלי Segway, טווח 65 ק"מ', 2799),
+    ('קורקינט חשמלי Razor E300', 'קורקינט חשמלי Razor לנוער', 999),
+    ('הליכון Reebok Jet 300+', 'הליכון Reebok עם שיפוע, מסך LED', 4999),
+    ('הליכון NordicTrack T 7.5 S', 'הליכון NordicTrack עם iFit, 12% שיפוע', 5999),
+    ('אופני כושר Schwinn IC4', 'אופני ספינינג Schwinn עם Bluetooth', 2999),
+    ('אופני כושר Peloton Bike', 'אופני ספינינג Peloton עם מסך 22 אינץ׳', 5499),
+    ('מכשיר חתירה Concept2 RowErg', 'מכשיר חתירה Concept2 מקצועי', 5999),
+    ('ספת אימון מתכווננת', 'ספת משקולות מתכווננת 7 מצבים', 999),
+    ('סט משקולות Bowflex SelectTech 552', 'משקולות מתכווננות 2-24 ק"ג', 1999),
+    ('משקולת קטלבל 16 ק"ג', 'משקולת קטלבל ברזל יצוק 16 ק"ג', 199),
+    ('מזרן יוגה Manduka PRO', 'מזרן יוגה Manduka PRO 6mm', 499),
+    ('מזרן יוגה Lululemon Reversible', 'מזרן יוגה Lululemon 5mm דו-צדדי', 399),
+    ('גלגל יוגה Cork', 'גלגל יוגה שעם טבעי, 33cm', 199),
+    ('רצועות התנגדות סט 5', 'סט 5 רצועות התנגדות עם ידיות', 149),
+    ('TRX HOME2 System', 'מערכת אימון TRX לבית', 899),
+    ('כפפות אגרוף Everlast Pro 12oz', 'כפפות אגרוף Everlast מקצועיות', 299),
+    ('שק אגרוף 120cm', 'שק אגרוף תלוי 120 ס"מ, 40 ק"ג', 599),
+    ('כדורגל Nike Flight', 'כדורגל Nike Flight רשמי, FIFA Pro', 599),
+    ('כדורגל Adidas UCL Pro', 'כדורגל Adidas ליגת האלופות', 549),
+    ('כדורסל Spalding NBA Official', 'כדורסל Spalding NBA רשמי, עור', 449),
+    ('מחבט טניס Wilson Blade v8', 'מחבט טניס Wilson Blade 98 16x19', 999),
+    ('מחבט טניס Head Speed Pro', 'מחבט טניס Head Speed Pro 2024', 899),
+    ('מחבט טניס שולחן Butterfly', 'מחבט טניס שולחן Butterfly מקצועי', 399),
+    ('שולחן טניס Kettler Outdoor', 'שולחן טניס חוץ Kettler מתקפל', 2999),
+    ('רקטת בדמינטון Yonex Astrox 88D', 'רקטת בדמינטון Yonex פרימיום', 699),
+    ('סט פטאנק 8 כדורים', 'סט כדורי פטאנק מקצועי 8 כדורים', 249),
+    ('גלשן SUP מתנפח 10.6\'', 'גלשן SUP מתנפח 10.6 רגל, סט מלא', 1999),
+    ('ערכת שנורקל מקצועית', 'ערכת שנורקל עם מסיכה וסנפיר', 349),
+    ('חליפת גלישה 3/2mm', 'חליפת גלישה 3/2mm גברים O\'Neill', 799),
+    ('משקפת סקי Oakley Flight Deck', 'משקפת סקי Oakley עם Prizm', 699),
+    ('קסדת סקי Smith Vantage MIPS', 'קסדת סקי Smith עם MIPS, חמה', 899),
+    ('מקלות הליכה Black Diamond', 'מקלות הליכה מתקפלים Black Diamond', 399),
+    ('תיק גב טיולים Osprey Atmos 65', 'תיק גב טיולים Osprey 65L', 999),
+    ('תיק גב טיולים Deuter Aircontact', 'תיק גב Deuter 55+10L', 899),
+    ('אוהל 4 עונות MSR Hubba Hubba', 'אוהל MSR ל-2 אנשים, קל במיוחד', 2499),
+    ('שק שינה Sea to Summit Spark', 'שק שינה Sea to Summit עד -3°C', 999),
+    ('כירת גז קמפינג Coleman', 'כירת גז Coleman 2 להבות', 349),
+    ('בקבוק מים Hydro Flask 32oz', 'בקבוק תרמי Hydro Flask 946ml', 179),
+    ('בקבוק מים CamelBak Chute Mag', 'בקבוק CamelBak 750ml, ללא BPA', 129),
+    ('Garmin Edge 540 GPS', 'מחשב אופניים Garmin Edge 540 GPS', 1499),
+    ('Wahoo KICKR Smart Trainer', 'מאמן אופניים חכם Wahoo KICKR', 4999),
+    ('קסדת אופניים Giro Aether MIPS', 'קסדת אופניים Giro פרימיום', 999),
+    ('כפפות אימון Nike Elemental', 'כפפות אימון Nike עם ריפוד', 149),
+    ('חגורת ריצה FlipBelt', 'חגורת ריצה FlipBelt לטלפון', 149),
+    ('Theragun Elite מכשיר עיסוי', 'אקדח עיסוי Theragun Elite, 5 מהירויות', 1799),
+    ('Theragun Mini מכשיר עיסוי', 'אקדח עיסוי Theragun Mini נייד', 699),
+    ('Foam Roller 45cm', 'רולר מסאז\' קצף 45 ס"מ', 99),
+    ('משקל דיגיטלי Withings Body+', 'משקל חכם Withings עם מדידת שומן', 399),
+    ('מד לחץ דם Omron M7', 'מד לחץ דם Omron M7 Intelli IT', 399),
+    ('מד חום Braun ThermoScan 7', 'מד חום אוזן Braun דיגיטלי', 299),
+    ('מברשת שיניים Oral-B iO Series 9', 'מברשת שיניים חשמלית Oral-B iO', 899),
+    ('מברשת שיניים Philips Sonicare 9900', 'מברשת שיניים Philips Sonicare פרימיום', 799),
+    ('Waterpik Aquarius מנקה שיניים', 'מנקה שיניים מים Waterpik שולחני', 399),
+    ('מסכת שינה Manta Sleep', 'מסכת שינה Manta Sleep פרימיום', 199),
+    ('כרית מסאז\' Shiatsu', 'כרית מסאז\' חשמלית Shiatsu עם חימום', 299),
+    ('מד סוכר FreeStyle Libre 2', 'חיישן סוכר FreeStyle Libre 2, 14 יום', 249),
+    ('ויטמין D3 2000IU 120 כמוסות', 'ויטמין D3 2000 יחידות, 120 כמוסות', 59),
+    ('אבקת חלבון Optimum Nutrition Gold', 'אבקת חלבון מי גבינה ON 2.27 ק"ג', 299),
+    ('חטיפי חלבון Quest Bar 12 יחידות', 'חטיפי חלבון Quest 12 יח\', טעמים', 149),
+    ('BCAA Xtend 30 מנות', 'BCAA Xtend אמינו חומצות, 30 מנות', 129),
+    ('Creatine Monohydrate 500g', 'קריאטין מונוהידרט 500 גרם', 89),
+    ('מגנזיום Solgar 250mg 100 טבליות', 'מגנזיום Solgar 250mg, 100 טבליות', 79),
+    ('אומגה 3 NOW 180 כמוסות', 'אומגה 3 NOW Foods 1000mg, 180 כמוסות', 99),
+    ('מולטי ויטמין Centrum Adults', 'מולטי ויטמין Centrum למבוגרים 100 טבליות', 89),
+    ('נעלי אימון Nike Metcon 9', 'נעלי אימון Nike Metcon 9 לחדר כושר', 549),
+    ('נעלי ריצה Hoka Bondi 8', 'נעלי ריצה Hoka Bondi 8, ריפוד מקסימלי', 699),
+    ('נעלי ריצה Brooks Ghost 15', 'נעלי ריצה Brooks Ghost 15 ניטרליות', 599),
+    ('נעלי ריצה ON Cloud 5', 'נעלי ריצה ON Cloud 5 שוויצריות', 599),
+    ('נעלי ריצה Saucony Kinvara 14', 'נעלי ריצה Saucony קלות משקל', 549),
+    ('טייץ ריצה Nike Dri-FIT', 'טייץ ריצה ארוך Nike Dri-FIT גברים', 299),
+    ('חולצת ריצה Under Armour Tech', 'חולצת ריצה Under Armour מנדפת זיעה', 149),
+    ('מכנסי אימון Nike Flex', 'מכנסי אימון קצרים Nike Flex', 199),
+    ('חזייה ספורטיבית Nike Swoosh', 'חזייה ספורטיבית Nike תמיכה בינונית', 179),
+    ('כדור כושר 65cm', 'כדור פיזיו 65 ס"מ עם משאבה', 99),
+    ('קפיצה חבל מהירות', 'חבל קפיצה מהירות עם מונה', 59),
+    ('Pull-Up Bar דלת', 'מתח דלת מתכוונן, עד 150 ק"ג', 149),
+    ('מזרן כושר מתקפל', 'מזרן כושר 180x60cm מתקפל, 5cm עובי', 249),
+    ('סט כלי שחייה מקצועי', 'משקפת + כובע + אטמי אוזניים', 199),
+    ('בגד ים Arena Powerskin', 'בגד ים תחרותי Arena, גברים', 299),
+    ('מצוף שחייה מתנפח', 'מצוף שחייה למתחילים, צבעוני', 79),
+    ('סנפירי שחייה Arena', 'סנפירי שחייה Arena קצרים', 179),
+    ('משקפי שחייה Speedo Biofuse', 'משקפי שחייה Speedo עם סיליקון', 149),
+    ('כפפות שוער Adidas Predator Pro', 'כפפות שוער Adidas מקצועיות', 399),
+    ('נעלי כדורגל Nike Mercurial', 'נעלי כדורגל Nike Mercurial Superfly', 799),
+    ('נעלי כדורגל Adidas Predator', 'נעלי כדורגל Adidas Predator Edge', 699),
+    ('מגני שוקיים Nike', 'מגני שוקיים Nike Mercurial Lite', 99),
+    ('רשת שער כדורגל נייד', 'שער כדורגל נייד מתקפל 180x120', 399),
+    ('מחבט פאדל Head Delta', 'מחבט פאדל Head Delta Pro', 799),
+    ('כדורי טניס Wilson US Open 4-Pack', 'סט 4 כדורי טניס Wilson רשמיים', 49),
+    ('סט בוצ\'ה 8 כדורים', 'סט כדורי בוצ\'ה מקצועי עם תיק', 299),
+    ('Fitbit Charge 6', 'צמיד כושר Fitbit Charge 6 GPS מובנה', 699),
+    ('Whoop 4.0 צמיד כושר', 'צמיד Whoop 4.0 מעקב ביצועים', 399),
+]
+
+kids_products: list[tuple[str, str, int]] = [
+    ('עגלת תינוק Bugaboo Fox 5', 'עגלת Bugaboo Fox 5 פרימיום, מולד ועד 22 ק"ג', 5499),
+    ('עגלת תינוק Cybex Priam', 'עגלת Cybex Priam פרימיום, מערכת מודולרית', 4999),
+    ('עגלת תינוק Babyzen YOYO2', 'עגלת Babyzen YOYO2 קומפקטית למטוס', 2999),
+    ('עגלת תינוק UPPAbaby Vista V2', 'עגלת UPPAbaby Vista V2, ניתנת להרחבה', 4499),
+    ('עגלת תינוק Joie Versatrax', 'עגלת Joie Versatrax רב-כיוונית', 1999),
+    ('עגלת טיול Maclaren Quest', 'עגלת טיול Maclaren Quest קלה', 1299),
+    ('כיסא בטיחות Cybex Sirona S2', 'כיסא בטיחות Cybex מסתובב 360°, 0-4', 1999),
+    ('כיסא בטיחות Britax Advansafix', 'כיסא בטיחות Britax, 9 חודשים עד 12', 1499),
+    ('כיסא בטיחות Maxi-Cosi Pearl 360', 'כיסא Maxi-Cosi מסתובב, 0-4 שנים', 1799),
+    ('בוסטר BeSafe iZi Flex FIX', 'בוסטר BeSafe עם ISOFIX, 4-12 שנים', 999),
+    ('מיטת תינוק IKEA SNIGLAR', 'מיטת תינוק IKEA עץ אשור', 499),
+    ('מזרן מיטת תינוק 60x120', 'מזרן מיטת תינוק קשיח, כותנה', 299),
+    ('מוניטור תינוק Nanit Pro', 'מוניטור תינוק Nanit עם מעקב שינה', 1299),
+    ('מוניטור תינוק Philips Avent SCD503', 'מוניטור שמע Philips Avent DECT', 349),
+    ('נדנדה חשמלית 4moms mamaRoo', 'נדנדה חשמלית 4moms עם 5 תנועות', 1499),
+    ('עריסה נלווית Chicco Next2Me', 'עריסה נלווית Chicco למיטת הורים', 999),
+    ('כיסא אוכל Stokke Tripp Trapp', 'כיסא אוכל Stokke גדל עם הילד', 1299),
+    ('כיסא אוכל Chicco Polly', 'כיסא אוכל גבוה Chicco מתקפל', 699),
+    ('אמבטיה לתינוק Stokke Flexi Bath', 'אמבטיה מתקפלת Stokke, 0-4 שנים', 249),
+    ('מנשא תינוק Ergobaby Omni 360', 'מנשא ארגונומי Ergobaby 4 תנועות', 799),
+    ('מנשא תינוק BabyBjörn Harmony', 'מנשא BabyBjörn רשת 3D, 0-3 שנים', 899),
+    ('בקבוק Dr. Brown\'s Options+ 3 Pack', 'סט 3 בקבוקים Dr. Brown\'s 270ml', 129),
+    ('בקבוק Philips Avent Natural 3 Pack', 'סט 3 בקבוקים Philips Avent 260ml', 119),
+    ('מעקר בקבוקים Philips Avent', 'מעקר חשמלי Philips Avent 6 בקבוקים', 349),
+    ('משאבת חלב Medela Swing Maxi', 'משאבת חלב חשמלית Medela כפולה', 999),
+    ('משאבת חלב Spectra S1', 'משאבת חלב חשמלית Spectra נטענת', 799),
+    ('מכשיר מוצץ NUK Space 0-6m', 'סט 2 מוצצים NUK Space סיליקון', 49),
+    ('סט הנקה Lansinoh', 'סט הנקה Lansinoh עם כריות ומשחה', 149),
+    ('LEGO Classic 10698 ערכה גדולה', 'LEGO Classic 790 חלקים, ערכה גדולה', 249),
+    ('LEGO Technic 42151 Bugatti', 'LEGO Technic Bugatti Bolide 905 חלקים', 249),
+    ('LEGO City 60337 תחנת רכבת', 'LEGO City Express תחנת רכבת 764 חלקים', 599),
+    ('LEGO Star Wars Millennium Falcon', 'LEGO Star Wars Millennium Falcon 1351 חלקים', 799),
+    ('LEGO Friends 41748 בית קהילתי', 'LEGO Friends בית קהילתי 1045 חלקים', 449),
+    ('LEGO Duplo 10914 קופסת לבנים', 'LEGO Duplo קופסת לבנים דלוקס 85 חלקים', 199),
+    ('Playmobil 70190 בית חולים', 'Playmobil בית חולים גדול עם ריהוט', 499),
+    ('Barbie Dreamhouse 2023', 'בית בובות Barbie Dreamhouse 3 קומות', 999),
+    ('Hot Wheels Ultimate Garage', 'מוסך Hot Wheels ענק עם מסלולים', 599),
+    ('Nerf Elite 2.0 Commander RD-6', 'רובה Nerf Elite 2.0 עם 12 חצים', 149),
+    ('Play-Doh ערכת יצירה 20 צבעים', 'Play-Doh 20 קופסאות בצק צבעוני', 99),
+    ('Crayola ערכת ציור 150 חלקים', 'ערכת ציור Crayola אמנותית מקצועית', 149),
+    ('פאזל Ravensburger 1000 חלקים', 'פאזל Ravensburger 1000 חלקים למבוגרים', 99),
+    ('משחק קופסה Monopoly', 'מונופול קלאסי בעברית', 149),
+    ('משחק קופסה Settlers of Catan', 'מתיישבי קטאן בעברית', 199),
+    ('משחק קופסה Ticket to Ride', 'כרטיס לנסוע - משחק קופסה', 199),
+    ('משחק קופסה Codenames', 'שמות קוד - משחק מילים בעברית', 99),
+    ('משחק קופסה Uno', 'אונו - משחק קלפים קלאסי', 39),
+    ('משחק קופסה Rummikub', 'רמיקוב - משחק אריחים ישראלי', 99),
+    ('אופניים לילדים 16 אינץ׳', 'אופני ילדים 16 אינץ׳ עם גלגלי עזר', 699),
+    ('אופניים לילדים 20 אינץ׳', 'אופני ילדים 20 אינץ׳, 7 הילוכים', 899),
+    ('אופני איזון Strider 12 Sport', 'אופני איזון לגילאי 18 חודשים-5', 399),
+    ('קורקינט Micro Mini Deluxe', 'קורקינט Micro Mini לגילאי 2-5', 399),
+    ('קורקינט Micro Maxi Deluxe', 'קורקינט Micro Maxi לגילאי 5-12', 499),
+    ('בריכה מתנפחת Intex 305cm', 'בריכה מתנפחת Intex 305x76 ס"מ', 399),
+    ('טרמפולינה 305cm עם רשת', 'טרמפולינה 305 ס"מ עם רשת בטיחות', 1299),
+    ('מגלשה לחצר Smoby', 'מגלשה Smoby 150 ס"מ לחצר', 599),
+    ('נדנדה כפולה לחצר', 'נדנדה כפולה מתכת לחצר', 799),
+    ('ארגז חול עם כיסוי', 'ארגז חול עץ עם כיסוי, 120x120', 499),
+    ('בובת Baby Born Interactive', 'בובת Baby Born אינטראקטיבית', 299),
+    ('דינוזאור Schleich T-Rex', 'פיגורת דינוזאור Schleich T-Rex', 99),
+    ('מכונית שלט רחוק 4WD', 'מכונית שלט רחוק 4x4 נטענת', 249),
+    ('רכבת עץ Brio World', 'סט רכבת עץ Brio 33 חלקים', 399),
+    ('מטבח משחק KidKraft', 'מטבח משחק KidKraft עץ גדול', 999),
+    ('כלי רופא סט משחק', 'סט כלי רופא לילדים 15 חלקים', 79),
+    ('חיתולים Pampers Premium 4 מגה', 'חיתולים Pampers Premium מידה 4, 104 יח׳', 149),
+    ('חיתולים Huggies Little Movers 4', 'חיתולים Huggies מידה 4, 120 יח׳', 139),
+    ('מגבונים Pampers Sensitive 12 חבילות', 'מגבונים Pampers Sensitive 12x52 יח׳', 99),
+    ('קרם החתלה Bepanthen 100g', 'קרם החתלה Bepanthen 100 גרם', 49),
+    ('שמפו Johnson\'s Baby 750ml', 'שמפו ג\'ונסון לתינוק ללא דמעות', 29),
+    ('סבון גוף Mustela Gentle 500ml', 'סבון גוף Mustela לתינוק 500 מ"ל', 69),
+    ('קרם הגנה Mustela SPF50+ 100ml', 'קרם הגנה Mustela לתינוק SPF50+', 79),
+    ('מזון תינוקות Materna שלב 1', 'תרכובת מזון Materna שלב 1, 700 גרם', 89),
+    ('מזון תינוקות Similac שלב 2', 'תרכובת מזון Similac שלב 2, 700 גרם', 99),
+    ('דייסת שיבולת שועל Materna', 'דייסה Materna שיבולת שועל 200 גרם', 19),
+    ('חטיף לתינוק Gerber Puffs', 'חטיפי Gerber Puffs לתינוקות, 4 חבילות', 39),
+    ('כוס שתייה NUK Magic Cup', 'כוס שתייה NUK Magic Cup 360°, 230ml', 49),
+    ('סט צלחות וכלי אוכל', 'סט כלי אוכל לתינוק 5 חלקים סיליקון', 79),
+    ('שער בטיחות Lindam Sure Shut', 'שער בטיחות Lindam לגרם מדרגות', 199),
+    ('מגן פינות סט 8 יחידות', 'סט מגני פינות שקופים 8 יח׳', 29),
+    ('תיק עגלה Skip Hop', 'תיק החתלה Skip Hop רב-תכליתי', 399),
+    ('צעצוע התפתחותי Sophie la Girafe', 'ג\'ירפה Sophie צעצוע גומי טבעי', 99),
+    ('מובייל מיטת תינוק Tiny Love', 'מובייל Tiny Love מוזיקלי עם אורות', 249),
+    ('שטיח משחק Tiny Love גדול', 'שטיח פעילות Tiny Love 150x100', 399),
+    ('כיסא נדנדה BabyBjörn Bliss', 'כיסא נדנדה BabyBjörn Bliss רשת', 999),
+    ('סט לידה מתנה Aden+Anais', 'סט מתנה Aden+Anais חיתולי במבוק 4 יח׳', 199),
+    ('בגד גוף Carter\'s סט 5', 'סט 5 בגדי גוף Carter\'s כותנה', 129),
+    ('פיג\'מה לילדים Carter\'s', 'פיג\'מה Carter\'s כותנה 2 חלקים', 79),
+    ('ילקוט Ergobag Pack', 'ילקוט ארגונומי Ergobag לבית ספר', 699),
+    ('קלמר Smiggle Double Up', 'קלמר Smiggle גדול דו-תאי', 99),
+    ('כיסא לימוד ארגונומי לילדים', 'כיסא שולחן עבודה ארגונומי, מתכוונן', 799),
+    ('שולחן לימוד מתכוונן לילדים', 'שולחן לימוד עם הטיה, מתכוונן גובה', 999),
+    ('VTech KidiZoom Camera Pix Plus', 'מצלמה דיגיטלית VTech לילדים', 249),
+    ('Toniebox רמקול סיפורים', 'Toniebox רמקול סיפורים לילדים', 399),
+    ('LeapFrog LeapPad Academy', 'טאבלט לימודי LeapFrog לילדים', 599),
+    ('Kindle Kids Edition', 'קורא ספרים אלקטרוני Kindle לילדים', 449),
+    ('Osmo Genius Starter Kit', 'ערכת לימוד אינטראקטיבית Osmo', 399),
+    ('מיקרוסקופ ילדים National Geographic', 'מיקרוסקופ National Geographic לילדים', 249),
+    ('טלסקופ ילדים Celestron FirstScope', 'טלסקופ Celestron לילדים ומתחילים', 349),
+]
+
+food_products: list[tuple[str, str, int]] = [
+    ('מכונת סודה SodaStream Terra', 'מכונת סודה SodaStream Terra, כולל בקבוק', 349),
+    ('מכונת סודה SodaStream Art', 'מכונת סודה SodaStream Art, עיצוב רטרו', 499),
+    ('בלון CO2 SodaStream 60L', 'בלון גז CO2 SodaStream למילוי חוזר', 99),
+    ('סירופ SodaStream Pepsi 440ml', 'סירופ SodaStream בטעם פפסי', 29),
+    ('קפסולות Nespresso Original 50 יח׳', 'קפסולות Nespresso Original מגוון טעמים', 149),
+    ('קפסולות Nespresso Vertuo 30 יח׳', 'קפסולות Nespresso Vertuo מגוון', 129),
+    ('קפה טחון Lavazza Qualità Rossa 1kg', 'קפה Lavazza טחון 1 ק"ג', 69),
+    ('קפה טחון Illy Classico 250g', 'קפה Illy Classico טחון 250 גרם', 49),
+    ('קפה פולים Lavazza Super Crema 1kg', 'קפה Lavazza פולים 1 ק"ג', 89),
+    ('תה Twinings English Breakfast 100', 'תה Twinings English Breakfast 100 שקיקים', 39),
+    ('תה Ahmad Earl Grey 100', 'תה Ahmad Earl Grey 100 שקיקים', 35),
+    ('מאצ\'ה אורגני 100g', 'אבקת מאצ\'ה יפנית אורגנית 100 גרם', 79),
+    ('שמן זית כתית מעולה 1L', 'שמן זית כתית מעולה איטלקי 1 ליטר', 59),
+    ('שמן זית Terra di Bari 750ml', 'שמן זית DOP Terra di Bari 750 מ"ל', 89),
+    ('חומץ בלסמי Modena 500ml', 'חומץ בלסמי מודנה IGP 500 מ"ל', 39),
+    ('מלח ים הימלאי ורוד 1kg', 'מלח ורוד הימלאי 1 ק"ג', 29),
+    ('סט תבלינים Schwartz 12 צנצנות', 'סט תבלינים Schwartz 12 צנצנות עם מתקן', 149),
+    ('פפריקה מעושנת La Chinata 70g', 'פפריקה מעושנת ספרדית La Chinata', 25),
+    ('טחינה הרבא 500g', 'טחינה גולמית הרבא 500 גרם', 29),
+    ('חומוס בטעם שום 400g', 'חומוס טרי בטעם שום, 400 גרם', 15),
+    ('חלבה אחוה 500g', 'חלבה אחוה שומשום טבעי 500 גרם', 35),
+    ('שוקולד Lindt Excellence 85% 100g', 'שוקולד מריר Lindt 85% קקאו', 19),
+    ('שוקולד Ferrero Rocher 24 יח׳', 'שוקולד Ferrero Rocher 24 כדורים', 59),
+    ('שוקולד Toblerone 360g', 'שוקולד Toblerone שוויצרי 360 גרם', 35),
+    ('שוקולד Godiva Assorted 14 יח׳', 'מארז שוקולד Godiva 14 פרלינים', 99),
+    ('Nutella 750g', 'ממרח שוקולד Nutella 750 גרם', 29),
+    ('חמאת בוטנים Skippy 462g', 'חמאת בוטנים Skippy Creamy', 25),
+    ('דבש טהור 500g', 'דבש פרחי בר טהור 500 גרם', 39),
+    ('ריבת תות Bonne Maman 370g', 'ריבת תות Bonne Maman צרפתית', 25),
+    ('גרנולה Jordan\'s 750g', 'גרנולה Jordan\'s פירות ואגוזים', 35),
+    ('שיבולת שועל Quaker 1kg', 'שיבולת שועל Quaker מהירה 1 ק"ג', 19),
+    ('חלב שקדים Alpro 1L', 'חלב שקדים Alpro ללא סוכר 1 ליטר', 19),
+    ('חלב שיבולת שועל Oatly 1L', 'חלב שיבולת שועל Oatly Barista 1L', 22),
+    ('יוגורט Danone Activia 8 יח׳', 'יוגורט פרוביוטי Danone Activia 8x125g', 35),
+    ('גבינת פרמזן Parmigiano 200g', 'גבינת פרמז\'ן Parmigiano Reggiano 200g', 49),
+    ('גבינת שמנת Philadelphia 200g', 'גבינת שמנת Philadelphia Original', 15),
+    ('פסטה Barilla Spaghetti 500g', 'פסטה Barilla ספגטי 500 גרם', 12),
+    ('פסטה De Cecco Penne 500g', 'פסטה De Cecco פנה ריגאטה 500g', 15),
+    ('אורז בסמטי Tilda 1kg', 'אורז בסמטי Tilda פרימיום 1 ק"ג', 25),
+    ('קינואה אורגנית 500g', 'קינואה לבנה אורגנית 500 גרם', 29),
+    ('עדשים אדומות 500g', 'עדשים אדומות 500 גרם', 15),
+    ('רוטב סויה Kikkoman 500ml', 'רוטב סויה Kikkoman 500 מ"ל', 22),
+    ('רוטב סריראצ\'ה Huy Fong 435ml', 'רוטב חריף סריראצ\'ה 435 מ"ל', 25),
+    ('רוטב פסטו Barilla 190g', 'רוטב פסטו Barilla בזיליקום 190g', 19),
+    ('קטשופ Heinz 700ml', 'קטשופ Heinz 700 מ"ל', 15),
+    ('מיונז Hellmann\'s 400ml', 'מיונז Hellmann\'s Real 400 מ"ל', 15),
+    ('חרדל Maille Dijon 215g', 'חרדל דיז\'ון Maille 215 גרם', 19),
+    ('טונה Rio Mare 3x80g', 'סט 3 טונה Rio Mare בשמן זית', 25),
+    ('סרדינים King Oscar 106g', 'סרדינים King Oscar בשמן זית', 15),
+    ('מלפפון חמוץ Kühne 670g', 'מלפפון חמוץ Kühne 670 גרם', 19),
+    ('זיתים Manzanilla 340g', 'זיתים ירוקים ממולאים Manzanilla', 15),
+    ('עגבניות מרוסקות Mutti 400g', 'עגבניות מרוסקות Mutti 400 גרם', 12),
+    ('רסק עגבניות Mutti 200g', 'רסק עגבניות Mutti כפול 200 גרם', 10),
+    ('שימורי פירות Del Monte 425g', 'אננס פרוס Del Monte 425 גרם', 12),
+    ('פופקורן מיקרוגל ACT II 3-Pack', 'פופקורן מיקרוגל ACT II חמאה 3 יח׳', 15),
+    ('חטיף Bamba 80g', 'חטיף במבה אוסם 80 גרם', 5),
+    ('חטיף Bissli 200g', 'חטיף ביסלי אוסם גריל 200 גרם', 8),
+    ('ופל במילוי שוקולד Elite', 'ופל Elite במילוי קרם שוקולד', 8),
+    ('עוגיות Oreo 154g', 'עוגיות Oreo קלאסיות 154 גרם', 12),
+    ('עוגיות LU Petit Beurre 200g', 'עוגיות חמאה LU Petit Beurre', 10),
+    ('קרקר מים Wasa 275g', 'קרקר שיפון Wasa 275 גרם', 12),
+    ('אגוזי קשיו קלויים 500g', 'אגוזי קשיו קלויים ומלוחים 500g', 59),
+    ('שקדים טבעיים 500g', 'שקדים טבעיים לא קלויים 500 גרם', 49),
+    ('מיקס אגוזים ופירות יבשים 500g', 'מיקס אגוזים ופירות יבשים פרימיום', 55),
+    ('תמרים מג\'הול 1kg', 'תמרים מג\'הול ישראלי 1 ק"ג', 69),
+    ('יין Barkan Reserve Cabernet', 'יין אדום ברקן רזרב קברנה סוביניון', 79),
+    ('יין Yarden Chardonnay', 'יין לבן ירדן שרדונה רמת הגולן', 89),
+    ('יין Casillero del Diablo Merlot', 'יין אדום Casillero del Diablo מרלו', 55),
+    ('בירה Goldstar 6-Pack', 'בירה גולדסטאר 6 פחיות 500 מ"ל', 45),
+    ('בירה Heineken 6-Pack', 'בירה הייניקן 6 בקבוקים 330 מ"ל', 49),
+    ('בירה Corona Extra 6-Pack', 'בירה קורונה 6 בקבוקים 355 מ"ל', 55),
+    ('וויסקי Jameson 700ml', 'וויסקי אירי Jameson 700 מ"ל', 129),
+    ('וויסקי Glenfiddich 12 700ml', 'וויסקי סקוטי Glenfiddich 12 שנה', 199),
+    ('וודקה Absolut 700ml', 'וודקה Absolut שוודית 700 מ"ל', 89),
+    ('ג\'ין Hendrick\'s 700ml', 'ג\'ין Hendrick\'s סקוטי 700 מ"ל', 159),
+    ('מים מינרלים Evian 6x1.5L', 'מים Evian 6 בקבוקים 1.5 ליטר', 35),
+    ('מים מוגזים San Pellegrino 6x1L', 'מים מוגזים San Pellegrino 6x1 ליטר', 39),
+    ('מיץ תפוזים Tropicana 1L', 'מיץ תפוזים Tropicana סחוט 1 ליטר', 19),
+    ('Red Bull 4-Pack 250ml', 'משקה אנרגיה Red Bull 4x250 מ"ל', 35),
+    ('Monster Energy 4-Pack 500ml', 'משקה אנרגיה Monster 4x500 מ"ל', 39),
+    ('Coca-Cola 6-Pack 1.5L', 'קוקה קולה 6 בקבוקים 1.5 ליטר', 39),
+    ('אבקת מרק Knorr 400g', 'אבקת מרק עוף Knorr 400 גרם', 19),
+    ('מרק מוכן Osem ירקות 400ml', 'מרק ירקות מוכן אסם 400 מ"ל', 12),
+    ('פיצה קפואה Dr. Oetker Ristorante', 'פיצה קפואה Dr. Oetker מרגריטה', 25),
+    ('נאגטס עוף פרוזן 500g', 'נאגטס עוף קפואים 500 גרם', 29),
+    ('גלידה Ben & Jerry\'s 465ml', 'גלידת Ben & Jerry\'s Cookie Dough', 35),
+    ('גלידה Häagen-Dazs 460ml', 'גלידת Häagen-Dazs Vanilla 460 מ"ל', 39),
+    ('מסטיק Orbit 60 יח׳', 'מסטיק Orbit ללא סוכר 60 כמוסות', 15),
+    ('סוכריות Mentos Roll 3-Pack', 'סוכריות Mentos Roll 3 חבילות', 10),
+    ('קמח לחם 1kg', 'קמח לחם מנופה 1 ק"ג', 8),
+    ('סוכר לבן 1kg', 'סוכר לבן רגיל 1 ק"ג', 7),
+    ('שמרים יבשים Shimrit 4x11g', 'שמרים יבשים שמרית 4 שקיקים', 10),
+    ('אבקת אפייה 100g', 'אבקת אפייה 100 גרם', 5),
+    ('שוקולד שבבים Callebaut 400g', 'שבבי שוקולד בלגי Callebaut 400g', 35),
+    ('וניל תמצית 100ml', 'תמצית וניל טבעית 100 מ"ל', 29),
+    ('מייפל סירופ Grade A 250ml', 'סירופ מייפל קנדי Grade A 250 מ"ל', 49),
+    ('קוקוס מיובש 200g', 'קוקוס מגורד מיובש 200 גרם', 15),
+    ('ציפס Pringles Original 165g', 'ציפס Pringles Original 165 גרם', 15),
+    ('ציפס Doritos Nacho Cheese 175g', 'ציפס Doritos טעם גבינה 175 גרם', 15),
+    ('פיסטוקים קלויים 500g', 'פיסטוקים קלויים ומלוחים 500 גרם', 69),
+]
+
+beauty_products: list[tuple[str, str, int]] = [
+    ('בושם Dior Sauvage EDT 100ml', 'בושם Dior Sauvage Eau de Toilette 100 מ"ל', 399),
+    ('בושם Bleu de Chanel EDP 100ml', 'בושם Bleu de Chanel Eau de Parfum 100 מ"ל', 499),
+    ('בושם Acqua di Gio Profumo 75ml', 'בושם Giorgio Armani Acqua di Gio', 399),
+    ('בושם Versace Eros EDT 100ml', 'בושם Versace Eros Eau de Toilette', 349),
+    ('בושם Hugo Boss Bottled EDP 100ml', 'בושם Hugo Boss Bottled Eau de Parfum', 329),
+    ('בושם Yves Saint Laurent Y EDP 100ml', 'בושם YSL Y Eau de Parfum', 429),
+    ('בושם Paco Rabanne 1 Million EDT 100ml', 'בושם Paco Rabanne 1 Million', 369),
+    ('בושם Dolce & Gabbana Light Blue 100ml', 'בושם D&G Light Blue גברים', 349),
+    ('בושם Chanel No. 5 EDP 100ml', 'בושם Chanel No. 5 Eau de Parfum', 599),
+    ('בושם Marc Jacobs Daisy EDT 100ml', 'בושם Marc Jacobs Daisy לנשים', 399),
+    ('בושם Lancôme La Vie Est Belle EDP 75ml', 'בושם Lancôme La Vie Est Belle', 449),
+    ('בושם Yves Saint Laurent Black Opium 90ml', 'בושם YSL Black Opium לנשים', 499),
+    ('בושם Carolina Herrera Good Girl 80ml', 'בושם Good Girl Carolina Herrera', 449),
+    ('בושם Gucci Bloom EDP 100ml', 'בושם Gucci Bloom Eau de Parfum', 429),
+    ('בושם Thierry Mugler Angel EDP 50ml', 'בושם Thierry Mugler Angel', 399),
+    ('קרם לחות CeraVe 340ml', 'קרם לחות CeraVe לעור יבש עד מאוד', 79),
+    ('ג\'ל ניקוי CeraVe Foaming 236ml', 'ג\'ל ניקוי CeraVe לעור רגיל עד שמן', 49),
+    ('סרום ויטמין C La Roche-Posay 30ml', 'סרום ויטמין C La Roche-Posay 10%', 149),
+    ('קרם עיניים Kiehl\'s Avocado 14ml', 'קרם עיניים Kiehl\'s אבוקדו 14 מ"ל', 179),
+    ('קרם הגנה La Roche-Posay SPF50 50ml', 'קרם הגנה La Roche-Posay Anthelios', 99),
+    ('קרם הגנה Eucerin SPF50 50ml', 'קרם הגנה Eucerin Sun Fluid', 89),
+    ('מסכת פנים Glamglow Supermud 50g', 'מסכת ניקוי Glamglow Supermud', 249),
+    ('סרום היאלורוני The Ordinary 30ml', 'סרום חומצה היאלורונית The Ordinary', 49),
+    ('סרום רטינול The Ordinary 30ml', 'סרום רטינול The Ordinary 0.5%', 39),
+    ('שמן פנים Nuxe Huile Prodigieuse 100ml', 'שמן יבש Nuxe רב-שימושי', 149),
+    ('קרם לחות Clinique Dramatically 125ml', 'קרם לחות Clinique Dramatically Different', 149),
+    ('קרם BB Missha M Perfect 50ml', 'קרם BB Missha מתאים לכל גווני עור', 79),
+    ('מייק-אפ Maybelline Fit Me Foundation', 'מייק-אפ Maybelline Fit Me Matte 30ml', 49),
+    ('מייק-אפ MAC Studio Fix Fluid', 'מייק-אפ MAC Studio Fix Fluid SPF15', 179),
+    ('מייק-אפ Estée Lauder Double Wear', 'מייק-אפ Estée Lauder Double Wear 30ml', 199),
+    ('מסקרה Maybelline Lash Sensational', 'מסקרה Maybelline Lash Sensational שחור', 49),
+    ('מסקרה Lancôme Lash Idôle', 'מסקרה Lancôme Lash Idôle', 139),
+    ('פלטת צלליות Urban Decay Naked3', 'פלטת צלליות Urban Decay Naked3 12 צבעים', 249),
+    ('פלטת צלליות Charlotte Tilbury Pillow Talk', 'פלטת צלליות Charlotte Tilbury', 249),
+    ('שפתון MAC Matte Lipstick', 'שפתון MAC גימור מאט', 99),
+    ('שפתון YSL Rouge Pur Couture', 'שפתון YSL Rouge Pur Couture', 179),
+    ('גלוס Fenty Beauty Gloss Bomb', 'גלוס שפתיים Fenty Beauty Universal', 119),
+    ('סומק NARS Orgasm', 'סומק NARS Orgasm קלאסי', 159),
+    ('פודרה Laura Mercier Translucent', 'פודרה שקופה Laura Mercier', 179),
+    ('קונסילר NARS Radiant Creamy', 'קונסילר NARS Radiant Creamy', 139),
+    ('אייליינר Stila Stay All Day', 'אייליינר עמיד Stila Stay All Day שחור', 99),
+    ('עפרון גבות Anastasia Beverly Hills', 'עפרון גבות Anastasia Brow Wiz', 119),
+    ('פריימר Smashbox Photo Finish', 'פריימר Smashbox Photo Finish 30ml', 149),
+    ('ספריי קיבוע Urban Decay All Nighter', 'ספריי קיבוע איפור Urban Decay', 149),
+    ('מסיר איפור Bioderma Sensibio H2O 500ml', 'מסיר איפור מיסלר Bioderma 500 מ"ל', 79),
+    ('שמפו Moroccanoil 250ml', 'שמפו Moroccanoil לחות 250 מ"ל', 99),
+    ('מרכך Moroccanoil 250ml', 'מרכך Moroccanoil לחות 250 מ"ל', 99),
+    ('שמן שיער Moroccanoil Treatment 100ml', 'שמן ארגן Moroccanoil 100 מ"ל', 169),
+    ('שמפו Olaplex No.4 250ml', 'שמפו Olaplex No.4 Bond Maintenance', 129),
+    ('מרכך Olaplex No.5 250ml', 'מרכך Olaplex No.5 Bond Maintenance', 129),
+    ('מסכת שיער Olaplex No.3 100ml', 'מסכת שיער Olaplex No.3 Hair Perfector', 129),
+    ('שמפו Kérastase Bain Satin 250ml', 'שמפו Kérastase Nutritive 250 מ"ל', 129),
+    ('מחליק שיער GHD Gold', 'מחליק שיער GHD Gold Professional', 899),
+    ('מחליק שיער Dyson Corrale', 'מחליק שיער Dyson Corrale אלחוטי', 1999),
+    ('פן Dyson Supersonic', 'פן שיער Dyson Supersonic HD15', 1799),
+    ('פן Parlux 385 PowerLight', 'פן שיער Parlux 385 מקצועי', 599),
+    ('מסלסל שיער Dyson Airwrap', 'מסלסל ומייבש Dyson Airwrap Complete', 2499),
+    ('מכונת תספורת Wahl Legend', 'מכונת תספורת Wahl Legend מקצועית', 399),
+    ('מכונת גילוח Braun Series 9 Pro', 'מכונת גילוח Braun Series 9 Pro', 1299),
+    ('מכונת גילוח Philips Series 9000', 'מכונת גילוח Philips S9986 Prestige', 1199),
+    ('Philips OneBlade Pro QP6651', 'מכונת גילוח Philips OneBlade Face+Body', 329),
+    ('גילוח Gillette Fusion5 ProGlide', 'סכיני גילוח Gillette Fusion5, 8 סכינים', 129),
+    ('קרם גילוח Nivea Men Sensitive', 'קרם גילוח Nivea Men Sensitive 200 מ"ל', 25),
+    ('דאודורנט Old Spice Whitewater 50ml', 'דאודורנט סטיק Old Spice', 25),
+    ('דאודורנט Dove Original Roll-On 50ml', 'דאודורנט Dove Original רול-און', 19),
+    ('סבון גוף Dove 500ml', 'סבון גוף Dove Deeply Nourishing 500 מ"ל', 25),
+    ('סבון גוף Nivea 500ml', 'סבון גוף Nivea Care 500 מ"ל', 22),
+    ('קרם גוף Nivea Soft 200ml', 'קרם גוף Nivea Soft 200 מ"ל', 25),
+    ('קרם ידיים L\'Occitane Shea 150ml', 'קרם ידיים L\'Occitane חמאת שיאה', 99),
+    ('ג\'ל רחצה The Body Shop 250ml', 'ג\'ל רחצה The Body Shop Shea', 49),
+    ('פצצת אמבט Lush', 'פצצת אמבט Lush צבעונית ומבושמת', 35),
+    ('מברשת שיניים Oral-B Vitality Pro', 'מברשת שיניים חשמלית Oral-B Vitality', 179),
+    ('משחת שיניים Sensodyne 75ml', 'משחת שיניים Sensodyne Repair 75 מ"ל', 25),
+    ('מי פה Listerine Cool Mint 500ml', 'מי פה Listerine Cool Mint 500 מ"ל', 25),
+    ('חוט דנטלי Oral-B Essential 50m', 'חוט דנטלי Oral-B Essential 50 מטר', 15),
+    ('לק ציפורניים OPI GelColor', 'לק ג\'ל OPI GelColor צבעים לבחירה', 69),
+    ('סט מניקור 12 חלקים', 'סט מניקור מקצועי 12 כלים בנרתיק', 99),
+    ('קרם רגליים Scholl 60ml', 'קרם רגליים Scholl Velvet Smooth', 39),
+    ('מכשיר פדיקור Scholl Velvet', 'מכשיר פדיקור חשמלי Scholl', 199),
+    ('ווקס לגוף Veet 20 רצועות', 'רצועות ווקס Veet לגוף 20 יחידות', 35),
+    ('מכשיר IPL Philips Lumea Advanced', 'מכשיר הסרת שיער Philips Lumea IPL', 1499),
+    ('מכשיר IPL Braun Silk Expert Pro 5', 'מכשיר הסרת שיער Braun IPL', 1299),
+    ('מברשת ניקוי פנים Foreo Luna 3', 'מברשת ניקוי פנים סיליקון Foreo', 699),
+    ('מכשיר מיקרוקרנט NuFACE Mini', 'מכשיר מיקרוקרנט NuFACE Mini+', 999),
+    ('סרום ריסים RevitaLash Advanced', 'סרום ריסים RevitaLash 3.5ml', 599),
+    ('ספריי שיזוף St. Tropez', 'ספריי שיזוף עצמי St. Tropez Express', 149),
+    ('מסכות פנים סט 10 יחידות', 'סט 10 מסכות בד לפנים, מגוון', 79),
+    ('אמבט מלח ים המלח 1kg', 'מלח אמבט ים המלח, 1 ק"ג', 35),
+    ('קרם אנטי אייג\'ינג Vichy LiftActiv', 'קרם אנטי אייג\'ינג Vichy LiftActiv', 179),
+    ('סרום פנים Estée Lauder Advanced Night', 'סרום Estée Lauder Advanced Night Repair', 349),
+    ('קרם עיניים Clinique All About Eyes', 'קרם עיניים Clinique All About Eyes 15ml', 149),
+    ('טונר Pixi Glow Tonic 250ml', 'טונר Pixi Glow Tonic גליקולי 250 מ"ל', 99),
+    ('מסכת שיער Kérastase Masquintense', 'מסכת שיער Kérastase Nutritive 200ml', 179),
+    ('ג\'ל לציפורניים Sally Hansen Miracle', 'לק ג\'ל Sally Hansen Miracle Gel', 49),
+    ('סט בישום Victoria\'s Secret', 'סט בישום Victoria\'s Secret Bombshell', 249),
+    ('שמן גוף Bio-Oil 200ml', 'שמן גוף Bio-Oil לצלקות וסימנים', 89),
+    ('קרם צוואר Clarins Extra-Firming', 'קרם צוואר Clarins Extra-Firming', 249),
+    ('פילינג Paula\'s Choice BHA 118ml', 'פילינג Paula\'s Choice 2% BHA 118 מ"ל', 129),
+]
+
+
+def generate_products(templates: list[tuple[str, str, int]], category: str, start_id: int) -> list[dict]:
+    """Generate product dicts from template tuples."""
     products = []
-    product_id = 1
-
-    # Calculate products per category
-    categories_list = list(CATEGORIES.keys())
-    products_per_category = total_products // len(categories_list)
-
-    for category_name in categories_list:
-        category_data = CATEGORIES[category_name]
-        brands = category_data["brands"]
-        product_types = category_data["products"]
-
-        # Generate products for this category
-        for i in range(products_per_category):
-            brand = random.choice(brands)
-            product_type = random.choice(product_types)
-
-            # Handle both dict and string product types
-            if isinstance(product_type, dict):
-                product_name_he = product_type["he"]
-                product_keywords_en = product_type["en"]
-            else:
-                product_name_he = product_type
-                product_keywords_en = product_type
-
-            # Create unique product names
-            if i % 3 == 0:
-                name = f"{brand} {product_name_he} Pro"
-            elif i % 3 == 1:
-                name = f"{brand} {product_name_he} {random.choice(['Max', 'Plus', 'Ultra', 'Lite', 'Air'])}"
-            else:
-                name = f"{product_name_he} {brand}"
-
-            # Add model number sometimes
-            if random.random() > 0.5:
-                name += f" {random.randint(100, 999)}"
-
-            # Add English keywords to description for search
-            search_keywords = f"{brand} {product_keywords_en}" if isinstance(product_type, dict) else brand
-
-            # Generate base price based on category
-            price_ranges = {
-                "אלקטרוניקה": (50, 3000),
-                "מחשבים": (100, 5000),
-                "בית וגן": (30, 2000),
-                "ספורט ובריאות": (20, 500),
-                "אופנה": (30, 800),
-                "ילדים ותינוקות": (15, 400),
-                "מזון ושתייה": (5, 150),
-                "טיפוח ויופי": (10, 300)
-            }
-
-            price_range = price_ranges.get(category_name, (10, 500))
-            base_price = round(random.uniform(price_range[0], price_range[1]), 2)
-
-            # Generate description with English keywords for search
-            descriptions = [
-                f"{name} - איכות מעולה ועיצוב מודרני. {search_keywords}",
-                f"מוצר איכותי מבית {brand}. {search_keywords}",
-                f"{product_name_he} מתקדם עם תכונות חדשניות. {search_keywords}",
-                f"הבחירה המושלמת עבור {product_name_he}. {search_keywords}",
-                f"{brand} {product_name_he} - המוצר הנמכר ביותר. {search_keywords}",
-            ]
-            description = random.choice(descriptions)
-
-            # Image URL - using multiple services for real product images
-            image_keywords = {
-                "אלקטרוניקה": "electronics",
-                "מחשבים": "computer",
-                "בית וגן": "home",
-                "ספורט ובריאות": "fitness",
-                "אופנה": "fashion",
-                "ילדים ותינוקות": "baby",
-                "מזון ושתייה": "food",
-                "טיפוח ויופי": "beauty"
-            }
-            keyword = image_keywords.get(category_name, "product")
-
-            # Use LoremFlickr - provides real photos based on keywords
-            image_url = f"https://loremflickr.com/400/300/{keyword}?lock={product_id}"
-
-            products.append({
-                "id": product_id,
-                "name": name,
-                "description": description,
-                "category": category_name,
-                "image_url": image_url,
-                "base_price": base_price,
-                "brand": brand,
-                "keywords": search_keywords  # Add keywords for better search
-            })
-
-            product_id += 1
-
+    for i, (name, description, base_price) in enumerate(templates):
+        products.append({
+            'id': start_id + i,
+            'name': name,
+            'description': description,
+            'category': category,
+            'image_url': None,
+            'base_price': base_price,
+        })
     return products
 
-# Generate the database
-PRODUCTS_DATABASE = generate_products_database(3000)
 
-def get_all_products():
-    """Get all products"""
+CATEGORY_CONFIG = [
+    (electronics_products, 'אלקטרוניקה', 1),
+    (computers_products, 'מחשבים', 201),
+    (fashion_products, 'אופנה', 401),
+    (home_garden_products, 'בית וגן', 601),
+    (sports_products, 'ספורט ובריאות', 801),
+    (kids_products, 'ילדים ותינוקות', 1001),
+    (food_products, 'מזון ושתייה', 1201),
+    (beauty_products, 'טיפוח ויופי', 1401),
+]
+
+
+# Generate the full products database on import
+PRODUCTS_DATABASE: list[dict] = []
+for _templates, _category, _start_id in CATEGORY_CONFIG:
+    PRODUCTS_DATABASE.extend(generate_products(_templates, _category, _start_id))
+
+
+def get_all_products() -> list[dict]:
+    """Return all products."""
     return PRODUCTS_DATABASE
 
-def get_products_by_category(category: str, limit: int = None):
-    """Get products filtered by category"""
-    filtered = [p for p in PRODUCTS_DATABASE if p["category"] == category]
-    if limit:
-        return filtered[:limit]
-    return filtered
 
-def search_products(query: str, category: str = None):
-    """Search products by name, description, brand, keywords, or category (supports English and Hebrew)"""
+def search_products(query: str, category: Optional[str] = None) -> list[dict]:
+    """Search products by name, description, or category."""
     query_lower = query.lower()
     results = []
-
     for product in PRODUCTS_DATABASE:
-        # Category filter
-        if category and product["category"] != category:
+        if category and product['category'] != category:
             continue
-
-        # Text search - search in name, description, brand, keywords, AND category
-        if (query_lower in product["name"].lower() or
-            query_lower in product["description"].lower() or
-            query_lower in product.get("brand", "").lower() or
-            query_lower in product.get("keywords", "").lower() or
-            query_lower in product.get("category", "").lower()):
+        if (query_lower in product['name'].lower() or
+                query_lower in product['description'].lower() or
+                query_lower in product['category'].lower()):
             results.append(product)
-
     return results
 
-def get_categories():
-    """Get list of all categories"""
-    return list(CATEGORIES.keys())
 
-def get_category_stats():
-    """Get statistics about products per category"""
+def get_products_by_category(category: str, limit: Optional[int] = None) -> list[dict]:
+    """Get products filtered by category with optional limit."""
+    results = [p for p in PRODUCTS_DATABASE if p['category'] == category]
+    if limit is not None:
+        return results[:limit]
+    return results
+
+
+def get_categories() -> list[str]:
+    """Return a list of all unique categories."""
+    seen = []
+    for _, category, _ in CATEGORY_CONFIG:
+        if category not in seen:
+            seen.append(category)
+    return seen
+
+
+def get_category_stats() -> dict:
+    """Return product count per category."""
     stats = {}
     for category in get_categories():
-        count = len(get_products_by_category(category))
-        stats[category] = count
+        stats[category] = len(get_products_by_category(category))
     return stats

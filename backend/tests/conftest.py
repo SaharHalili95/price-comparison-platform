@@ -21,11 +21,11 @@ def sample_product():
     """Sample product data for testing."""
     return {
         "id": 1,
-        "name": "Test Mouse",
-        "description": "A test mouse for testing",
-        "category": "Electronics",
-        "image_url": "https://example.com/mouse.jpg",
-        "base_price": 100.0
+        "name": "iPhone 15 Pro Max 256GB",
+        "description": "iPhone 15 Pro Max עם מסך 6.7 אינץ׳",
+        "category": "אלקטרוניקה",
+        "image_url": None,
+        "base_price": 5299.0
     }
 
 
@@ -35,26 +35,26 @@ def sample_products():
     return [
         {
             "id": 1,
-            "name": "Gaming Mouse",
-            "description": "High-performance gaming mouse",
-            "category": "Electronics",
-            "image_url": "https://example.com/mouse1.jpg",
-            "base_price": 150.0
+            "name": "iPhone 15 Pro Max 256GB",
+            "description": "iPhone 15 Pro Max עם מסך 6.7 אינץ׳",
+            "category": "אלקטרוניקה",
+            "image_url": None,
+            "base_price": 5299.0
         },
         {
-            "id": 2,
-            "name": "Wireless Keyboard",
-            "description": "Bluetooth keyboard",
-            "category": "Electronics",
-            "image_url": "https://example.com/keyboard.jpg",
-            "base_price": 200.0
+            "id": 201,
+            "name": "MacBook Air M3 15\" 16GB 512GB",
+            "description": "MacBook Air עם שבב M3",
+            "category": "מחשבים",
+            "image_url": None,
+            "base_price": 6299.0
         },
         {
-            "id": 3,
-            "name": "USB Hub",
-            "description": "4-port USB hub",
-            "category": "Accessories",
-            "image_url": "https://example.com/hub.jpg",
-            "base_price": 50.0
+            "id": 401,
+            "name": "Nike Air Max 90",
+            "description": "נעלי Nike Air Max 90 קלאסיות",
+            "category": "אופנה",
+            "image_url": None,
+            "base_price": 549.0
         }
     ]

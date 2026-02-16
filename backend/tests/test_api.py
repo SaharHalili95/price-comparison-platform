@@ -43,14 +43,15 @@ class TestProductSearchEndpoint:
 
     def test_search_products_with_query(self, client):
         """Test searching products with a query."""
-        response = client.get("/api/products/search?query=mouse")
+        response = client.get("/api/products/search?query=Samsung")
         assert response.status_code == 200
         data = response.json()
         assert "query" in data
-        assert data["query"] == "mouse"
+        assert data["query"] == "Samsung"
         assert "total_results" in data
         assert "products" in data
         assert isinstance(data["products"], list)
+        assert data["total_results"] > 0
 
     def test_search_products_empty_query(self, client):
         """Test that empty query returns validation error."""
@@ -59,14 +60,14 @@ class TestProductSearchEndpoint:
 
     def test_search_products_with_category(self, client):
         """Test searching products with category filter."""
-        response = client.get("/api/products/search?query=test&category=Electronics")
+        response = client.get("/api/products/search?query=Samsung&category=אלקטרוניקה")
         assert response.status_code == 200
         data = response.json()
         assert "products" in data
 
     def test_search_products_response_structure(self, client):
         """Test that search response has correct structure."""
-        response = client.get("/api/products/search?query=keyboard")
+        response = client.get("/api/products/search?query=iPhone")
         assert response.status_code == 200
         data = response.json()
 
@@ -75,12 +76,19 @@ class TestProductSearchEndpoint:
         assert "total_results" in data
         assert "products" in data
 
-        # If there are products, check their structure
-        if data["products"]:
-            product = data["products"][0]
-            assert "id" in product
-            assert "name" in product
-            assert "prices" in product
+        # Products should exist and have correct structure
+        assert len(data["products"]) > 0
+        product = data["products"][0]
+        assert "id" in product
+        assert "name" in product
+        assert "prices" in product
+
+    def test_search_hebrew_query(self, client):
+        """Test searching with Hebrew query."""
+        response = client.get("/api/products/search?query=אלקטרוניקה")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total_results"] > 0
 
 
 class TestCategoriesEndpoint:
@@ -99,6 +107,7 @@ class TestCategoriesEndpoint:
         assert "stats" in data
         assert "total_categories" in data
         assert isinstance(data["categories"], list)
+        assert data["total_categories"] == 8
 
     def test_get_category_products(self, client):
         """Test getting products by category."""
