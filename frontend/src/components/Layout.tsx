@@ -8,6 +8,7 @@ interface LayoutProps {
 
 export default function Layout({ children, onHome, onCategorySearch }: LayoutProps) {
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
       {/* Header */}
@@ -70,7 +71,10 @@ export default function Layout({ children, onHome, onCategorySearch }: LayoutPro
                   </>
                 )}
               </div>
-              <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-200 text-sm font-semibold">
+              <button
+                onClick={() => setLoginOpen(true)}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-200 text-sm font-semibold"
+              >
                 התחבר
               </button>
             </nav>
@@ -139,6 +143,67 @@ export default function Layout({ children, onHome, onCategorySearch }: LayoutPro
           </div>
         </div>
       </footer>
+
+      {/* Login Modal */}
+      {loginOpen && (
+        <>
+          <div className="fixed inset-0 bg-black/50 z-[60]" onClick={() => setLoginOpen(false)} />
+          <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative" dir="rtl">
+              <button
+                onClick={() => setLoginOpen(false)}
+                className="absolute top-4 left-4 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              <div className="text-center mb-6">
+                <div className="bg-gradient-to-br from-blue-600 to-purple-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">התחברות</h2>
+                <p className="text-gray-500 text-sm mt-1">התחברו לחשבון שלכם</p>
+              </div>
+
+              <form onSubmit={(e) => { e.preventDefault(); setLoginOpen(false); }} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">אימייל</label>
+                  <input
+                    type="email"
+                    placeholder="your@email.com"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200"
+                    dir="ltr"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">סיסמה</label>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200"
+                    dir="ltr"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200"
+                >
+                  התחבר
+                </button>
+              </form>
+
+              <div className="mt-4 text-center text-sm text-gray-500">
+                אין לכם חשבון?{' '}
+                <button className="text-blue-600 hover:text-blue-700 font-medium">הירשמו עכשיו</button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
