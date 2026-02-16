@@ -1,23 +1,5 @@
 import { ProductWithPrices, SourceEnum } from '../types/product';
 
-// Category colors for product placeholder images [background, text]
-const categoryColors: Record<string, [string, string]> = {
-  'אלקטרוניקה': ['1a365d', 'e2e8f0'],
-  'מחשבים': ['2d1b69', 'e9d5ff'],
-  'אופנה': ['831843', 'fce7f3'],
-  'בית וגן': ['14532d', 'd1fae5'],
-  'ספורט ובריאות': ['7c2d12', 'fed7aa'],
-  'ילדים ותינוקות': ['581c87', 'f3e8ff'],
-  'מזון ושתייה': ['7f1d1d', 'fecaca'],
-  'טיפוח ויופי': ['4a1942', 'fae8ff'],
-};
-
-function getImage(productName: string, category: string): string {
-  const [bg, fg] = categoryColors[category] || ['374151', 'e5e7eb'];
-  const text = encodeURIComponent(productName.slice(0, 40));
-  return `https://placehold.co/400x300/${bg}/${fg}?text=${text}`;
-}
-
 // Seeded random for consistent prices
 function seededRandom(seed: number): number {
   const x = Math.sin(seed * 9301 + 49297) * 49297;
@@ -64,7 +46,6 @@ export function generateProducts(
       name,
       description,
       category,
-      image_url: getImage(name, category),
       created_at: `2024-01-${day}`,
       prices,
       lowest_price: lowest,

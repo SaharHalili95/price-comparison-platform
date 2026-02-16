@@ -5,15 +5,15 @@ import { fashionProducts, homeGardenProducts } from './templates/fashion';
 import { sportsProducts, kidsProducts } from './templates/lifestyle';
 import { foodProducts, beautyProducts } from './templates/food-beauty';
 
-// Generate all products with unique IDs
+// Generate all products with unique IDs (spaced by 200 to avoid collisions)
 const electronics = generateProducts(electronicsProducts, 'אלקטרוניקה', 1);
-const computers = generateProducts(computersProducts, 'מחשבים', 101);
-const fashion = generateProducts(fashionProducts, 'אופנה', 201);
-const homeGarden = generateProducts(homeGardenProducts, 'בית וגן', 301);
-const sports = generateProducts(sportsProducts, 'ספורט ובריאות', 401);
-const kids = generateProducts(kidsProducts, 'ילדים ותינוקות', 501);
-const food = generateProducts(foodProducts, 'מזון ושתייה', 601);
-const beauty = generateProducts(beautyProducts, 'טיפוח ויופי', 701);
+const computers = generateProducts(computersProducts, 'מחשבים', 201);
+const fashion = generateProducts(fashionProducts, 'אופנה', 401);
+const homeGarden = generateProducts(homeGardenProducts, 'בית וגן', 601);
+const sports = generateProducts(sportsProducts, 'ספורט ובריאות', 801);
+const kids = generateProducts(kidsProducts, 'ילדים ותינוקות', 1001);
+const food = generateProducts(foodProducts, 'מזון ושתייה', 1201);
+const beauty = generateProducts(beautyProducts, 'טיפוח ויופי', 1401);
 
 export const mockProducts: ProductWithPrices[] = [
   ...electronics,
@@ -25,21 +25,6 @@ export const mockProducts: ProductWithPrices[] = [
   ...food,
   ...beauty,
 ];
-
-// Search function for mock data
-export const searchMockProducts = (query: string): ProductWithPrices[] => {
-  if (!query || query.trim() === '') {
-    return mockProducts;
-  }
-
-  const searchTerm = query.toLowerCase().trim();
-
-  return mockProducts.filter(product =>
-    product.name.toLowerCase().includes(searchTerm) ||
-    product.description?.toLowerCase().includes(searchTerm) ||
-    product.category?.toLowerCase().includes(searchTerm)
-  );
-};
 
 // Refresh prices with random variations (simulates real-time price updates)
 export const refreshPrices = (): ProductWithPrices[] => {

@@ -24,12 +24,7 @@ export default function ProductCard({ product, onViewDetails }: ProductCardProps
     <div className="card p-0 flex flex-col h-full">
       {/* Product Image */}
       <div className="relative h-48 bg-gray-100 overflow-hidden">
-        <ProductImage
-          productName={product.name}
-          fallbackUrl={product.image_url || ''}
-          alt={product.name}
-          className="w-full h-full object-contain"
-        />
+        <ProductImage productName={product.name} />
 
         {/* Savings Badge */}
         {savings > 0 && (

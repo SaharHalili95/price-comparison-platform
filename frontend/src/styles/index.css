@@ -49,23 +49,6 @@
     transform: translateY(-2px);
   }
 
-  /* Store Badge */
-  .store-badge {
-    @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200;
-  }
-
-  .store-badge-amazon {
-    @apply bg-orange-100 text-orange-800 hover:bg-orange-200;
-  }
-
-  .store-badge-ebay {
-    @apply bg-blue-100 text-blue-800 hover:bg-blue-200;
-  }
-
-  .store-badge-walmart {
-    @apply bg-yellow-100 text-yellow-800 hover:bg-yellow-200;
-  }
-
   /* Shimmer Loading Effect */
   .shimmer {
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);

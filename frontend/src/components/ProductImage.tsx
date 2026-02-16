@@ -1,8 +1,5 @@
 interface ProductImageProps {
   productName: string;
-  fallbackUrl: string;
-  alt: string;
-  className?: string;
 }
 
 // Generate a consistent color from a string
