@@ -1,6 +1,6 @@
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Query, BackgroundTasks
@@ -68,8 +68,8 @@ async def search_products_endpoint(
                         description=product.get('description'),
                         category=product.get('category'),
                         image_url=product.get('image_url'),
-                        created_at=datetime.now(),
-                        updated_at=datetime.now(),
+                        created_at=datetime.now(timezone.utc),
+                        updated_at=datetime.now(timezone.utc),
                         prices=product.get('prices', []),
                         lowest_price=product.get('lowest_price'),
                         highest_price=product.get('highest_price'),
@@ -108,8 +108,8 @@ async def search_products_endpoint(
                 description=product["description"],
                 category=product["category"],
                 image_url=product["image_url"],
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc),
                 prices=prices,
                 **price_stats
             )
@@ -145,8 +145,8 @@ async def get_product(product_id: int):
         description=product["description"],
         category=product["category"],
         image_url=product["image_url"],
-        created_at=datetime.now(),
-        updated_at=datetime.now(),
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
         prices=prices,
         **price_stats
     )
@@ -202,8 +202,8 @@ async def list_products(
             description=product["description"],
             category=product["category"],
             image_url=product["image_url"],
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
             prices=prices,
             **price_stats
         )
@@ -256,8 +256,8 @@ async def get_category_products(
             description=product["description"],
             category=product["category"],
             image_url=product["image_url"],
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
             prices=prices,
             **price_stats
         )

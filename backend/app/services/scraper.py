@@ -1,6 +1,6 @@
 import random
 from typing import List
-from datetime import datetime
+from datetime import datetime, timezone
 from app.schemas.product import PriceInfo, SourceEnum
 
 
@@ -42,7 +42,7 @@ class PriceScraper:
                 currency="₪",
                 availability=availability,
                 url=self._generate_url(source, product_name),
-                last_updated=datetime.now()
+                last_updated=datetime.now(timezone.utc)
             )
             prices.append(price_info)
 

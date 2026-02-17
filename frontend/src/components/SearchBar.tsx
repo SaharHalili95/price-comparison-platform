@@ -27,6 +27,8 @@ export default function SearchBar({ onSearch, loading = false }: SearchBarProps)
               placeholder="חפשו מוצרים (לדוגמה: אייפון, אוזניות, מחשב נייד)..."
               className="input-field pr-10"
               disabled={loading}
+              maxLength={100}
+              aria-label="חיפוש מוצרים"
             />
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
               <svg

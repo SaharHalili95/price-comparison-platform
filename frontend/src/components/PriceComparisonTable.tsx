@@ -4,6 +4,15 @@ interface PriceComparisonTableProps {
   product: ProductWithPrices;
 }
 
+const isValidUrl = (url: string): boolean => {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
 export default function PriceComparisonTable({ product }: PriceComparisonTableProps) {
   const formatPrice = (price: number) => {
     return `₪${price.toLocaleString('he-IL')}`;
@@ -133,7 +142,7 @@ export default function PriceComparisonTable({ product }: PriceComparisonTablePr
 
                   {/* Action */}
                   <td className="py-4 px-4 text-right">
-                    {priceInfo.availability && priceInfo.url && (
+                    {priceInfo.availability && priceInfo.url && isValidUrl(priceInfo.url) && (
                       <a
                         href={priceInfo.url}
                         target="_blank"
@@ -153,6 +162,18 @@ export default function PriceComparisonTable({ product }: PriceComparisonTablePr
           </tbody>
         </table>
       </div>
+
+      {/* Out of stock warning */}
+      {!bestPrice && (
+        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <span className="text-red-800 font-medium">כל המוצרים אזלו מהמלאי כרגע</span>
+          </div>
+        </div>
+      )}
 
       {/* Savings Info */}
       {product.lowest_price && product.highest_price && (

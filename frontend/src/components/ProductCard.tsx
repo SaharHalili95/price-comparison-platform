@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { ProductWithPrices } from '../types/product';
 import ProductImage from './ProductImage';
 
@@ -6,7 +7,7 @@ interface ProductCardProps {
   onViewDetails?: (productId: number) => void;
 }
 
-export default function ProductCard({ product, onViewDetails }: ProductCardProps) {
+export default memo(function ProductCard({ product, onViewDetails }: ProductCardProps) {
   const formatPrice = (price: number | undefined) => {
     if (!price) return 'N/A';
     return `₪${price.toLocaleString('he-IL')}`;
@@ -21,14 +22,14 @@ export default function ProductCard({ product, onViewDetails }: ProductCardProps
   const savings = getSavingsPercentage();
 
   return (
-    <div className="card p-0 flex flex-col h-full">
+    <article className="card p-0 flex flex-col h-full" aria-label={`מוצר: ${product.name}`}>
       {/* Product Image */}
       <div className="relative h-48 bg-gray-100 overflow-hidden">
         <ProductImage productName={product.name} />
 
         {/* Savings Badge */}
         {savings > 0 && (
-          <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+          <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold" aria-label={`חסכו ${savings} אחוז`}>
             חסכו {savings}%
           </div>
         )}
@@ -100,6 +101,6 @@ export default function ProductCard({ product, onViewDetails }: ProductCardProps
           </button>
         </div>
       </div>
-    </div>
+    </article>
   );
-}
+});
