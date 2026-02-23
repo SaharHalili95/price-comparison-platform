@@ -5,9 +5,11 @@ import ProductImage from './ProductImage';
 interface ProductCardProps {
   product: ProductWithPrices;
   onViewDetails?: (productId: number) => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
-export default memo(function ProductCard({ product, onViewDetails }: ProductCardProps) {
+export default memo(function ProductCard({ product, onViewDetails, isFavorite, onToggleFavorite }: ProductCardProps) {
   const formatPrice = (price: number | undefined) => {
     if (!price) return 'N/A';
     return `₪${price.toLocaleString('he-IL')}`;
@@ -27,9 +29,22 @@ export default memo(function ProductCard({ product, onViewDetails }: ProductCard
       <div className="relative h-48 bg-gray-100 overflow-hidden">
         <ProductImage productName={product.name} />
 
+        {/* Favorite Button */}
+        {onToggleFavorite && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
+            className="absolute top-2 right-2 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow-md hover:bg-white transition-all duration-200 hover:scale-110"
+            aria-label={isFavorite ? 'הסר ממועדפים' : 'הוסף למועדפים'}
+          >
+            <svg className={`w-5 h-5 transition-colors ${isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-400'}`} fill={isFavorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
+        )}
+
         {/* Savings Badge */}
         {savings > 0 && (
-          <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold" aria-label={`חסכו ${savings} אחוז`}>
+          <div className={`absolute ${onToggleFavorite ? 'top-12' : 'top-2'} right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold`} aria-label={`חסכו ${savings} אחוז`}>
             חסכו {savings}%
           </div>
         )}

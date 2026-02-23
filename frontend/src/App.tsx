@@ -1,10 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from './components/Layout';
 import SearchBar from './components/SearchBar';
 import ProductCard from './components/ProductCard';
 import PriceComparisonTable from './components/PriceComparisonTable';
 import { searchProducts, refreshAllPrices } from './services/api';
 import { ProductWithPrices, SearchResponse } from './types/product';
+
+const FAVORITES_KEY = 'pricecompare-favorites';
+
+function loadFavorites(): ProductWithPrices[] {
+  try {
+    const data = localStorage.getItem(FAVORITES_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch { return []; }
+}
+
+function saveFavorites(favs: ProductWithPrices[]) {
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(favs));
+}
 
 function App() {
   const [loading, setLoading] = useState(false);
@@ -13,6 +26,28 @@ function App() {
   const [selectedProduct, setSelectedProduct] = useState<ProductWithPrices | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
+  const [favorites, setFavorites] = useState<ProductWithPrices[]>(loadFavorites);
+  const [showFavorites, setShowFavorites] = useState(false);
+
+  useEffect(() => { saveFavorites(favorites); }, [favorites]);
+
+  const isFavorite = (productId: number) => favorites.some(f => f.id === productId);
+
+  const toggleFavorite = (product: ProductWithPrices) => {
+    setFavorites(prev =>
+      prev.some(f => f.id === product.id)
+        ? prev.filter(f => f.id !== product.id)
+        : [...prev, product]
+    );
+  };
+
+  const handleShowFavorites = () => {
+    setShowFavorites(true);
+    setSelectedProduct(null);
+    setSearchResults(null);
+    setError(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleSearch = async (query: string) => {
     setLoading(true);
@@ -67,12 +102,13 @@ function App() {
   const handleHome = () => {
     setSearchResults(null);
     setSelectedProduct(null);
+    setShowFavorites(false);
     setError(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <Layout onHome={handleHome} onCategorySearch={handleSearch}>
+    <Layout onHome={handleHome} onCategorySearch={handleSearch} onShowFavorites={handleShowFavorites} favoritesCount={favorites.length}>
       {/* Hero Section */}
       <div className="text-center mb-12 relative">
         {/* Floating Decorative Elements */}
@@ -218,6 +254,8 @@ function App() {
                   key={product.id}
                   product={product}
                   onViewDetails={handleViewDetails}
+                  isFavorite={isFavorite(product.id)}
+                  onToggleFavorite={() => toggleFavorite(product)}
                 />
               ))}
             </div>
@@ -232,8 +270,40 @@ function App() {
         </div>
       )}
 
+      {/* Favorites View */}
+      {showFavorites && !loading && (
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-6">
+            <h3 className="text-xl font-semibold text-gray-900">
+              המועדפים שלי ({favorites.length})
+            </h3>
+          </div>
+          {favorites.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {favorites.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onViewDetails={handleViewDetails}
+                  isFavorite={true}
+                  onToggleFavorite={() => toggleFavorite(product)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              <p className="text-gray-600">עדיין לא הוספתם מוצרים למועדפים.</p>
+              <p className="text-gray-500 text-sm mt-1">חפשו מוצרים ולחצו על הלב כדי לשמור אותם כאן.</p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Welcome State */}
-      {!searchResults && !loading && !error && (
+      {!searchResults && !loading && !error && !showFavorites && (
         <div className="max-w-6xl mx-auto">
           {/* Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
