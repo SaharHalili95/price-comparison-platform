@@ -3,11 +3,13 @@ import os
 from datetime import datetime, timezone
 from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, Query, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 
 from app.schemas.product import ProductWithPrices, SearchResponse, PriceInfo
 from app.services.scraper import PriceScraper
 from app.data.products_database import search_products, get_products_by_category, get_categories, get_category_stats, get_all_products
+from app.core.dependencies import get_current_active_user, require_admin
+from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +39,8 @@ def get_scraper_manager():
 async def search_products_endpoint(
     query: str = Query(..., min_length=1, description="Search query for products"),
     category: Optional[str] = Query(None, description="Filter by category"),
-    use_real_data: bool = Query(False, description="Use real scraping (slower but accurate)")
+    use_real_data: bool = Query(False, description="Use real scraping (slower but accurate)"),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     Search for products by name.
@@ -123,7 +126,7 @@ async def search_products_endpoint(
 
 
 @router.get("/products/{product_id}", response_model=ProductWithPrices)
-async def get_product(product_id: int):
+async def get_product(product_id: int, current_user: User = Depends(get_current_active_user)):
     """
     Get a specific product by ID with price comparison.
     """
@@ -153,7 +156,7 @@ async def get_product(product_id: int):
 
 
 @router.get("/products/{product_id}/prices", response_model=List[PriceInfo])
-async def get_product_prices(product_id: int):
+async def get_product_prices(product_id: int, current_user: User = Depends(get_current_active_user)):
     """
     Get price comparison for a specific product.
     Returns prices from all available sources.
@@ -175,7 +178,8 @@ async def get_product_prices(product_id: int):
 @router.get("/products", response_model=List[ProductWithPrices])
 async def list_products(
     category: Optional[str] = Query(None, description="Filter by category"),
-    limit: int = Query(10, ge=1, le=100, description="Number of products to return")
+    limit: int = Query(10, ge=1, le=100, description="Number of products to return"),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     List all products with price comparison.
@@ -213,7 +217,7 @@ async def list_products(
 
 
 @router.get("/categories")
-async def list_categories():
+async def list_categories(current_user: User = Depends(get_current_active_user)):
     """
     Get list of all available categories.
     """
@@ -229,7 +233,8 @@ async def list_categories():
 @router.get("/categories/{category_name}/products", response_model=SearchResponse)
 async def get_category_products(
     category_name: str,
-    limit: int = Query(50, ge=1, le=100, description="Number of products to return")
+    limit: int = Query(50, ge=1, le=100, description="Number of products to return"),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     Get all products in a specific category.
@@ -271,7 +276,7 @@ async def get_category_products(
 
 
 @router.get("/scraper/status")
-async def scraper_status():
+async def scraper_status(current_user: User = Depends(require_admin)):
     """
     Get status of real scrapers.
     """
@@ -284,7 +289,7 @@ async def scraper_status():
 
 
 @router.post("/scraper/test")
-async def test_scrapers(query: str = Query("mouse", description="Test query")):
+async def test_scrapers(query: str = Query("mouse", description="Test query"), current_user: User = Depends(require_admin)):
     """
     Test real scrapers with a query.
     This endpoint always uses real scraping.

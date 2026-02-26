@@ -3,9 +3,16 @@ import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+
 from app.core.config import settings
 from app.core.database import init_db
+from app.core.rate_limiter import limiter
+from app.core.middleware import SecurityHeadersMiddleware
 from app.api.routes import router
+from app.api.auth_routes import router as auth_router
+import app.models  # noqa: F401 - ensure all models are imported for table creation
 
 # Configure logging
 logging.basicConfig(
@@ -46,12 +53,19 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Rate limiter
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Security headers middleware
+app.add_middleware(SecurityHeadersMiddleware)
+
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -79,6 +93,7 @@ async def health_check():
 
 
 # Include API routes
+app.include_router(auth_router)
 app.include_router(router)
 
 

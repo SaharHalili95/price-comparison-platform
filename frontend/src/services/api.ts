@@ -1,7 +1,6 @@
 import { SearchResponse } from '../types/product';
 import { mockProducts, refreshPrices } from '../data/mockProducts';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+import { authFetch } from './authApi';
 
 // Simulate API delay for local fallback
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -13,14 +12,9 @@ let currentProducts = [...mockProducts];
  * Search products - tries backend API first, falls back to local mock data.
  */
 export const searchProducts = async (query: string, useRefreshed: boolean = false): Promise<SearchResponse> => {
-  // Try backend API first
   try {
-    const url = new URL(`${API_BASE_URL}/api/products/search`);
-    url.searchParams.set('query', query);
-
-    const response = await fetch(url.toString(), {
-      signal: AbortSignal.timeout(5000),
-    });
+    const params = new URLSearchParams({ query });
+    const response = await authFetch(`/api/products/search?${params}`);
 
     if (response.ok) {
       return await response.json();
@@ -52,12 +46,8 @@ export const searchProducts = async (query: string, useRefreshed: boolean = fals
  * Refresh all prices - tries backend, falls back to local refresh.
  */
 export const refreshAllPrices = async (): Promise<void> => {
-  // Try backend API
   try {
-    const response = await fetch(`${API_BASE_URL}/api/products?limit=50`, {
-      signal: AbortSignal.timeout(5000),
-    });
-
+    const response = await authFetch('/api/products?limit=50');
     if (response.ok) return;
   } catch {
     // Backend unavailable

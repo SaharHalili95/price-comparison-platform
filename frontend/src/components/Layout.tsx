@@ -1,4 +1,6 @@
 import { ReactNode, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 interface LayoutProps {
   children: ReactNode;
@@ -10,7 +12,14 @@ interface LayoutProps {
 
 export default function Layout({ children, onHome, onCategorySearch, onShowFavorites, favoritesCount = 0 }: LayoutProps) {
   const [categoriesOpen, setCategoriesOpen] = useState(false);
-  const [loginOpen, setLoginOpen] = useState(false);
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
       {/* Header */}
@@ -32,67 +41,95 @@ export default function Layout({ children, onHome, onCategorySearch, onShowFavor
             </button>
 
             <nav className="hidden md:flex items-center gap-6">
-              <button onClick={onHome} className="text-gray-600 hover:text-blue-600 transition-colors font-medium">בית</button>
-              <div className="relative">
-                <button
-                  onClick={() => setCategoriesOpen(!categoriesOpen)}
-                  className="text-gray-600 hover:text-blue-600 transition-colors font-medium flex items-center gap-1"
-                >
-                  קטגוריות
-                  <svg className={`w-4 h-4 transition-transform ${categoriesOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {categoriesOpen && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setCategoriesOpen(false)} />
-                    <div className="absolute right-0 top-full mt-1 w-52 bg-white rounded-xl shadow-xl border border-gray-100 z-50 py-1">
-                      {[
-                        { name: 'אלקטרוניקה', icon: '💻' },
-                        { name: 'מחשבים', icon: '🖥️' },
-                        { name: 'אופנה', icon: '👕' },
-                        { name: 'בית וגן', icon: '🏠' },
-                        { name: 'ספורט ובריאות', icon: '⚽' },
-                        { name: 'ילדים ותינוקות', icon: '🍼' },
-                        { name: 'מזון ושתייה', icon: '🍕' },
-                        { name: 'טיפוח ויופי', icon: '💄' },
-                      ].map((cat) => (
-                        <button
-                          key={cat.name}
-                          onClick={() => {
-                            onCategorySearch?.(cat.name);
-                            setCategoriesOpen(false);
-                          }}
-                          className="w-full text-right px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors flex items-center gap-2"
-                        >
-                          <span>{cat.icon}</span>
-                          <span>{cat.name}</span>
-                        </button>
-                      ))}
+              {isAuthenticated && (
+                <>
+                  <button onClick={onHome} className="text-gray-600 hover:text-blue-600 transition-colors font-medium">בית</button>
+                  <div className="relative">
+                    <button
+                      onClick={() => setCategoriesOpen(!categoriesOpen)}
+                      className="text-gray-600 hover:text-blue-600 transition-colors font-medium flex items-center gap-1"
+                    >
+                      קטגוריות
+                      <svg className={`w-4 h-4 transition-transform ${categoriesOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {categoriesOpen && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setCategoriesOpen(false)} />
+                        <div className="absolute right-0 top-full mt-1 w-52 bg-white rounded-xl shadow-xl border border-gray-100 z-50 py-1">
+                          {[
+                            { name: 'אלקטרוניקה', icon: '💻' },
+                            { name: 'מחשבים', icon: '🖥️' },
+                            { name: 'אופנה', icon: '👕' },
+                            { name: 'בית וגן', icon: '🏠' },
+                            { name: 'ספורט ובריאות', icon: '⚽' },
+                            { name: 'ילדים ותינוקות', icon: '🍼' },
+                            { name: 'מזון ושתייה', icon: '🍕' },
+                            { name: 'טיפוח ויופי', icon: '💄' },
+                          ].map((cat) => (
+                            <button
+                              key={cat.name}
+                              onClick={() => {
+                                onCategorySearch?.(cat.name);
+                                setCategoriesOpen(false);
+                              }}
+                              className="w-full text-right px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors flex items-center gap-2"
+                            >
+                              <span>{cat.icon}</span>
+                              <span>{cat.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  <button
+                    onClick={onShowFavorites}
+                    className="relative text-gray-600 hover:text-red-500 transition-colors font-medium flex items-center gap-1"
+                  >
+                    <svg className="w-5 h-5" fill={favoritesCount > 0 ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                    מועדפים
+                    {favoritesCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold">
+                        {favoritesCount}
+                      </span>
+                    )}
+                  </button>
+                </>
+              )}
+
+              {/* Auth Buttons */}
+              {isAuthenticated ? (
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                      {user?.username?.charAt(0).toUpperCase()}
                     </div>
-                  </>
-                )}
-              </div>
-              <button
-                onClick={onShowFavorites}
-                className="relative text-gray-600 hover:text-red-500 transition-colors font-medium flex items-center gap-1"
-              >
-                <svg className="w-5 h-5" fill={favoritesCount > 0 ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-                מועדפים
-                {favoritesCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold">
-                    {favoritesCount}
-                  </span>
-                )}
-              </button>
-              <button
-                onClick={() => setLoginOpen(true)}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-200 text-sm font-semibold"
-              >
-                התחבר
-              </button>
+                    <span className="font-medium">{user?.username}</span>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="bg-gradient-to-r from-red-500 to-pink-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-200 text-sm font-semibold"
+                  >
+                    התנתק
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <Link to="/login" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
+                    התחבר
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-200 text-sm font-semibold"
+                  >
+                    הירשמו
+                  </Link>
+                </div>
+              )}
             </nav>
           </div>
         </div>
@@ -159,67 +196,6 @@ export default function Layout({ children, onHome, onCategorySearch, onShowFavor
           </div>
         </div>
       </footer>
-
-      {/* Login Modal */}
-      {loginOpen && (
-        <>
-          <div className="fixed inset-0 bg-black/50 z-[60]" onClick={() => setLoginOpen(false)} />
-          <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative" dir="rtl">
-              <button
-                onClick={() => setLoginOpen(false)}
-                className="absolute top-4 left-4 text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-
-              <div className="text-center mb-6">
-                <div className="bg-gradient-to-br from-blue-600 to-purple-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900">התחברות</h2>
-                <p className="text-gray-500 text-sm mt-1">התחברו לחשבון שלכם</p>
-              </div>
-
-              <form onSubmit={(e) => { e.preventDefault(); setLoginOpen(false); }} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">אימייל</label>
-                  <input
-                    type="email"
-                    placeholder="your@email.com"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200"
-                    dir="ltr"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">סיסמה</label>
-                  <input
-                    type="password"
-                    placeholder="••••••••"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200"
-                    dir="ltr"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200"
-                >
-                  התחבר
-                </button>
-              </form>
-
-              <div className="mt-4 text-center text-sm text-gray-500">
-                אין לכם חשבון?{' '}
-                <button className="text-blue-600 hover:text-blue-700 font-medium">הירשמו עכשיו</button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
     </div>
   );
 }
