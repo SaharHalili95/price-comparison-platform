@@ -121,10 +121,10 @@ async def logout(
     try:
         access_payload = decode_token(access_token_str)
         access_jti = access_payload.get("jti")
-        access_exp = datetime.fromtimestamp(access_payload.get("exp"), tz=timezone.utc)
+        access_exp = datetime.utcfromtimestamp(access_payload.get("exp"))
     except Exception:
         access_jti = "unknown"
-        access_exp = datetime.now(timezone.utc)
+        access_exp = datetime.utcnow()
 
     AuthService.logout(db, access_jti, access_exp, body.refresh_token, current_user.id)
     AuthService.log_event(db, "logout", user_id=current_user.id, request=request)

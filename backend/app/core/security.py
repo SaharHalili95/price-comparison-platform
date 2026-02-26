@@ -14,6 +14,11 @@ pwd_context = CryptContext(
 )
 
 
+def _utcnow() -> datetime:
+    """Return current UTC time as naive datetime (SQLite compatible)."""
+    return datetime.utcnow()
+
+
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
@@ -27,9 +32,9 @@ def create_access_token(
     role: str,
     additional_claims: Optional[dict] = None,
 ) -> tuple[str, str, datetime]:
-    """Create an access token. Returns (token, jti, expires_at)."""
+    """Create an access token. Returns (token, jti, expires_at) with naive UTC datetimes."""
     jti = str(uuid.uuid4())
-    now = datetime.now(timezone.utc)
+    now = _utcnow()
     expires_at = now + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
     payload = {
@@ -48,9 +53,9 @@ def create_access_token(
 
 
 def create_refresh_token(subject: int) -> tuple[str, str, datetime]:
-    """Create a refresh token. Returns (token, jti, expires_at)."""
+    """Create a refresh token. Returns (token, jti, expires_at) with naive UTC datetimes."""
     jti = str(uuid.uuid4())
-    now = datetime.now(timezone.utc)
+    now = _utcnow()
     expires_at = now + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
 
     payload = {

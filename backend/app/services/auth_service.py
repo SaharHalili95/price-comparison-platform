@@ -10,7 +10,7 @@ from app.models.user import User
 from app.models.session import Session
 from app.models.token_blacklist import TokenBlacklist
 from app.models.audit_log import AuditLog
-from app.core.security import hash_password, verify_password, create_access_token, create_refresh_token, decode_token
+from app.core.security import hash_password, verify_password, create_access_token, create_refresh_token, decode_token, _utcnow
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -55,18 +55,18 @@ class AuthService:
             return None
 
         # Check account lockout
-        if user.locked_until and user.locked_until > datetime.now(timezone.utc):
+        if user.locked_until and user.locked_until > _utcnow():
             return None
 
         # Reset lockout if expired
-        if user.locked_until and user.locked_until <= datetime.now(timezone.utc):
+        if user.locked_until and user.locked_until <= _utcnow():
             user.locked_until = None
             user.failed_login_attempts = 0
 
         if not verify_password(password, user.hashed_password):
             user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
             if user.failed_login_attempts >= settings.MAX_LOGIN_ATTEMPTS:
-                user.locked_until = datetime.now(timezone.utc) + timedelta(
+                user.locked_until = _utcnow() + timedelta(
                     minutes=settings.LOCKOUT_DURATION_MINUTES
                 )
             db.commit()
@@ -75,7 +75,7 @@ class AuthService:
         # Successful login
         user.failed_login_attempts = 0
         user.locked_until = None
-        user.last_login = datetime.now(timezone.utc)
+        user.last_login = _utcnow()
         db.commit()
         return user
 
@@ -108,7 +108,7 @@ class AuthService:
         db.add(session)
         db.commit()
 
-        expires_in = int((access_expires - datetime.now(timezone.utc)).total_seconds())
+        expires_in = int((access_expires - _utcnow()).total_seconds())
         return access_token, refresh_token, expires_in
 
     @staticmethod
@@ -188,7 +188,7 @@ class AuthService:
                     jti=refresh_jti,
                     token_type="refresh",
                     user_id=user_id,
-                    expires_at=session.expires_at if session else datetime.now(timezone.utc),
+                    expires_at=session.expires_at if session else _utcnow(),
                 ))
             except Exception:
                 pass
