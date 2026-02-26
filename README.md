@@ -3,15 +3,17 @@
 ![CI](https://github.com/SaharHalili95/price-comparison-platform/actions/workflows/ci.yml/badge.svg)
 ![Python](https://img.shields.io/badge/python-3.11+-blue.svg)
 ![TypeScript](https://img.shields.io/badge/typescript-5.0+-blue.svg)
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Auth](https://img.shields.io/badge/auth-Zero%20Trust-red.svg)
 
 🌐 **[Live Demo](https://saharhalili95.github.io/price-comparison-platform/)**
 
-A modern price comparison web application built with React + TypeScript frontend and FastAPI backend. The live demo runs entirely in the browser using mock data - no backend installation required!
+A modern price comparison web application built with React + TypeScript frontend and FastAPI backend, secured with a **Zero Trust Authentication** system. Every API request is verified, tokens are short-lived and rotated, and all auth events are audited.
 
 ## ✨ Key Features
 
+- 🔐 **Zero Trust Authentication** - JWT-based auth with token rotation, blacklisting, and audit logging
 - 🔍 **Smart Search** - Search products across multiple sources in parallel
 - 💰 **Real-Time Price Comparison** - Get up-to-date prices from all stores
 - 📊 **Price Analysis** - View minimum, maximum, and average prices
@@ -25,11 +27,30 @@ A modern price comparison web application built with React + TypeScript frontend
 Visit the live application: **[https://saharhalili95.github.io/price-comparison-platform/](https://saharhalili95.github.io/price-comparison-platform/)**
 
 The demo includes:
+- User registration and login (Zero Trust Authentication)
 - 12 sample products with realistic Israeli pricing
 - Full search functionality
 - Product categories (Electronics, Computers, Gaming, Home & Smart Home)
 - Price comparison from 3 stores (Amazon, eBay, Walmart)
 - Responsive design with Hebrew RTL support
+
+## 🔐 Zero Trust Authentication
+
+This project implements a full Zero Trust security model — **never trust, always verify**.
+
+| Feature | Details |
+|---------|---------|
+| **JWT Tokens** | Access (15 min) + Refresh (7 days) with automatic rotation |
+| **Token Rotation** | Refresh tokens are single-use; each refresh issues a new pair |
+| **Token Revocation** | Blacklist table for immediate logout across all devices |
+| **Account Lockout** | 5 failed login attempts = 30 minute lock |
+| **Rate Limiting** | Per-IP limits on all auth endpoints (slowapi) |
+| **RBAC** | User/Admin roles with admin-only endpoints |
+| **Audit Logging** | All auth events logged with IP, user-agent, timestamp |
+| **Device Tracking** | IP + User-Agent recorded per session |
+| **Security Headers** | HSTS, X-Frame-Options, X-Content-Type-Options, CSP |
+| **Password Security** | bcrypt (12 rounds) + strength validation (uppercase, lowercase, digit, 8+ chars) |
+| **Input Validation** | Pydantic schemas with strict rules on all endpoints |
 
 ## 🛠️ Tech Stack
 
@@ -38,10 +59,15 @@ The demo includes:
 - **TypeScript** - Type-safe JavaScript
 - **Vite** - Fast build tool and dev server
 - **Tailwind CSS** - Utility-first CSS framework
+- **React Router v6** - Client-side routing with protected routes
 
-### Backend (Optional for local development)
+### Backend
 - **FastAPI** - High-performance Python web framework
 - **Pydantic** - Data validation and settings management
+- **SQLAlchemy** - ORM with SQLite database
+- **python-jose** - JWT token creation and validation
+- **passlib + bcrypt** - Password hashing
+- **slowapi** - Rate limiting
 - **BeautifulSoup4** - Web scraping
 - **Python 3.11+** - Modern Python features
 
@@ -88,17 +114,34 @@ npm run dev
 
 ## 📡 API Usage Examples
 
-### Search with Mock Data
+### Register a New User
 ```bash
-curl "http://localhost:8001/api/products/search?query=mouse"
+curl -X POST http://localhost:8001/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "username": "user1", "password": "MyPass123", "full_name": "Test User"}'
 ```
 
-### Search with Real Data (Requires Backend)
+### Login
 ```bash
-curl "http://localhost:8001/api/products/search?query=mouse&use_real_data=true"
+curl -X POST http://localhost:8001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "password": "MyPass123"}'
 ```
 
-For detailed information: [SCRAPERS_GUIDE.md](./SCRAPERS_GUIDE.md)
+### Search Products (Authenticated)
+```bash
+curl "http://localhost:8001/api/products/search?query=mouse" \
+  -H "Authorization: Bearer <access_token>"
+```
+
+### Refresh Token
+```bash
+curl -X POST http://localhost:8001/api/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d '{"refresh_token": "<refresh_token>"}'
+```
+
+For detailed scraping information: [SCRAPERS_GUIDE.md](./SCRAPERS_GUIDE.md)
 
 ## 🐳 Docker Deployment
 
@@ -124,22 +167,34 @@ pytest tests/ -v
 
 ```
 price-comparison-platform/
-├── frontend/                # React + TypeScript frontend
+├── frontend/                    # React + TypeScript frontend
 │   ├── src/
-│   │   ├── components/     # React components
-│   │   ├── data/          # Mock data for demo
-│   │   ├── services/      # API service layer
-│   │   ├── types/         # TypeScript type definitions
-│   │   └── App.tsx        # Main application component
-│   ├── dist/              # Build output
-│   └── package.json       # Dependencies and scripts
-├── backend/               # FastAPI backend
+│   │   ├── components/         # React components (Layout, ProtectedRoute)
+│   │   ├── contexts/           # AuthContext (login/register/logout state)
+│   │   ├── pages/              # LoginPage, RegisterPage, HomePage
+│   │   ├── services/           # API layer (authApi, api)
+│   │   ├── types/              # TypeScript types (auth, products)
+│   │   ├── data/               # Mock data for demo
+│   │   └── App.tsx             # Router with protected routes
+│   └── package.json
+├── backend/                     # FastAPI backend
 │   ├── app/
-│   │   ├── main.py       # FastAPI application
-│   │   ├── scrapers/     # Web scraping modules
-│   │   └── models/       # Data models
-│   └── requirements.txt   # Python dependencies
-└── README.md             # This file
+│   │   ├── api/
+│   │   │   ├── routes.py       # Product endpoints (protected)
+│   │   │   └── auth_routes.py  # Auth endpoints (register/login/refresh/logout)
+│   │   ├── core/
+│   │   │   ├── config.py       # Settings (JWT, rate limits, lockout)
+│   │   │   ├── security.py     # JWT creation/validation, bcrypt hashing
+│   │   │   ├── dependencies.py # get_current_user, require_admin
+│   │   │   ├── rate_limiter.py # slowapi per-IP limiter
+│   │   │   └── middleware.py   # Security headers middleware
+│   │   ├── models/             # SQLAlchemy models (User, Session, TokenBlacklist, AuditLog)
+│   │   ├── schemas/            # Pydantic validation schemas
+│   │   ├── services/           # Business logic (AuthService)
+│   │   ├── scrapers/           # Web scraping modules
+│   │   └── main.py             # FastAPI app entry point
+│   └── requirements.txt
+└── README.md
 ```
 
 ## 🚀 Deployment
@@ -153,6 +208,18 @@ cd frontend
 npm run build
 npm run deploy
 ```
+
+## 🔑 Auth Endpoints
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|:---:|
+| POST | `/api/auth/register` | Create new account | No |
+| POST | `/api/auth/login` | Get access + refresh tokens | No |
+| POST | `/api/auth/refresh` | Rotate refresh token | No |
+| POST | `/api/auth/logout` | Revoke tokens | Yes |
+| GET | `/api/auth/me` | Get current user profile | Yes |
+
+All product endpoints (`/api/products/*`) require authentication. Admin endpoints (`scraper_status`, `test_scrapers`) require the `admin` role.
 
 ## 🌟 Sample Products
 
