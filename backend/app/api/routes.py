@@ -8,8 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from app.schemas.product import ProductWithPrices, SearchResponse, PriceInfo
 from app.services.scraper import PriceScraper
 from app.data.products_database import search_products, get_products_by_category, get_categories, get_category_stats, get_all_products
-from app.core.dependencies import get_current_active_user, require_admin
-from app.models.user import User
+from app.core.dependencies import require_admin
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +39,6 @@ async def search_products_endpoint(
     query: str = Query(..., min_length=1, description="Search query for products"),
     category: Optional[str] = Query(None, description="Filter by category"),
     use_real_data: bool = Query(False, description="Use real scraping (slower but accurate)"),
-    current_user: User = Depends(get_current_active_user),
 ):
     """
     Search for products by name.
@@ -126,7 +124,7 @@ async def search_products_endpoint(
 
 
 @router.get("/products/{product_id}", response_model=ProductWithPrices)
-async def get_product(product_id: int, current_user: User = Depends(get_current_active_user)):
+async def get_product(product_id: int):
     """
     Get a specific product by ID with price comparison.
     """
@@ -156,7 +154,7 @@ async def get_product(product_id: int, current_user: User = Depends(get_current_
 
 
 @router.get("/products/{product_id}/prices", response_model=List[PriceInfo])
-async def get_product_prices(product_id: int, current_user: User = Depends(get_current_active_user)):
+async def get_product_prices(product_id: int):
     """
     Get price comparison for a specific product.
     Returns prices from all available sources.
@@ -179,7 +177,6 @@ async def get_product_prices(product_id: int, current_user: User = Depends(get_c
 async def list_products(
     category: Optional[str] = Query(None, description="Filter by category"),
     limit: int = Query(10, ge=1, le=100, description="Number of products to return"),
-    current_user: User = Depends(get_current_active_user),
 ):
     """
     List all products with price comparison.
@@ -217,7 +214,7 @@ async def list_products(
 
 
 @router.get("/categories")
-async def list_categories(current_user: User = Depends(get_current_active_user)):
+async def list_categories():
     """
     Get list of all available categories.
     """
@@ -234,7 +231,6 @@ async def list_categories(current_user: User = Depends(get_current_active_user))
 async def get_category_products(
     category_name: str,
     limit: int = Query(50, ge=1, le=100, description="Number of products to return"),
-    current_user: User = Depends(get_current_active_user),
 ):
     """
     Get all products in a specific category.

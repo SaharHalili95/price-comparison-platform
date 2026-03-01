@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
-import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import HomePage from './pages/HomePage';
@@ -39,13 +38,11 @@ function App() {
         <Route
           path="/"
           element={
-            <ProtectedRoute>
-              <HomePage
-                onCategorySearch={categorySearch}
-                showFavoritesView={showFavorites}
-                onResetFavoritesView={() => setShowFavorites(false)}
-              />
-            </ProtectedRoute>
+            <HomePage
+              onCategorySearch={categorySearch}
+              showFavoritesView={showFavorites}
+              onResetFavoritesView={() => setShowFavorites(false)}
+            />
           }
         />
       </Routes>

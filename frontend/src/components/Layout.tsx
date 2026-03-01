@@ -41,64 +41,64 @@ export default function Layout({ children, onHome, onCategorySearch, onShowFavor
             </button>
 
             <nav className="hidden md:flex items-center gap-6">
+              {/* Always visible nav items */}
+              <button onClick={onHome} className="text-gray-600 hover:text-blue-600 transition-colors font-medium">בית</button>
+              <div className="relative">
+                <button
+                  onClick={() => setCategoriesOpen(!categoriesOpen)}
+                  className="text-gray-600 hover:text-blue-600 transition-colors font-medium flex items-center gap-1"
+                >
+                  קטגוריות
+                  <svg className={`w-4 h-4 transition-transform ${categoriesOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {categoriesOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setCategoriesOpen(false)} />
+                    <div className="absolute right-0 top-full mt-1 w-52 bg-white rounded-xl shadow-xl border border-gray-100 z-50 py-1">
+                      {[
+                        { name: 'אלקטרוניקה', icon: '💻' },
+                        { name: 'מחשבים', icon: '🖥️' },
+                        { name: 'אופנה', icon: '👕' },
+                        { name: 'בית וגן', icon: '🏠' },
+                        { name: 'ספורט ובריאות', icon: '⚽' },
+                        { name: 'ילדים ותינוקות', icon: '🍼' },
+                        { name: 'מזון ושתייה', icon: '🍕' },
+                        { name: 'טיפוח ויופי', icon: '💄' },
+                      ].map((cat) => (
+                        <button
+                          key={cat.name}
+                          onClick={() => {
+                            onCategorySearch?.(cat.name);
+                            setCategoriesOpen(false);
+                          }}
+                          className="w-full text-right px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors flex items-center gap-2"
+                        >
+                          <span>{cat.icon}</span>
+                          <span>{cat.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+              {/* Favorites - only for logged-in users */}
               {isAuthenticated && (
-                <>
-                  <button onClick={onHome} className="text-gray-600 hover:text-blue-600 transition-colors font-medium">בית</button>
-                  <div className="relative">
-                    <button
-                      onClick={() => setCategoriesOpen(!categoriesOpen)}
-                      className="text-gray-600 hover:text-blue-600 transition-colors font-medium flex items-center gap-1"
-                    >
-                      קטגוריות
-                      <svg className={`w-4 h-4 transition-transform ${categoriesOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                    {categoriesOpen && (
-                      <>
-                        <div className="fixed inset-0 z-40" onClick={() => setCategoriesOpen(false)} />
-                        <div className="absolute right-0 top-full mt-1 w-52 bg-white rounded-xl shadow-xl border border-gray-100 z-50 py-1">
-                          {[
-                            { name: 'אלקטרוניקה', icon: '💻' },
-                            { name: 'מחשבים', icon: '🖥️' },
-                            { name: 'אופנה', icon: '👕' },
-                            { name: 'בית וגן', icon: '🏠' },
-                            { name: 'ספורט ובריאות', icon: '⚽' },
-                            { name: 'ילדים ותינוקות', icon: '🍼' },
-                            { name: 'מזון ושתייה', icon: '🍕' },
-                            { name: 'טיפוח ויופי', icon: '💄' },
-                          ].map((cat) => (
-                            <button
-                              key={cat.name}
-                              onClick={() => {
-                                onCategorySearch?.(cat.name);
-                                setCategoriesOpen(false);
-                              }}
-                              className="w-full text-right px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors flex items-center gap-2"
-                            >
-                              <span>{cat.icon}</span>
-                              <span>{cat.name}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                  <button
-                    onClick={onShowFavorites}
-                    className="relative text-gray-600 hover:text-red-500 transition-colors font-medium flex items-center gap-1"
-                  >
-                    <svg className="w-5 h-5" fill={favoritesCount > 0 ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                    מועדפים
-                    {favoritesCount > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold">
-                        {favoritesCount}
-                      </span>
-                    )}
-                  </button>
-                </>
+                <button
+                  onClick={onShowFavorites}
+                  className="relative text-gray-600 hover:text-red-500 transition-colors font-medium flex items-center gap-1"
+                >
+                  <svg className="w-5 h-5" fill={favoritesCount > 0 ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                  מועדפים
+                  {favoritesCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold">
+                      {favoritesCount}
+                    </span>
+                  )}
+                </button>
               )}
 
               {/* Auth Buttons */}
