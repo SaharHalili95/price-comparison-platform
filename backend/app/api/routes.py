@@ -272,7 +272,7 @@ async def get_category_products(
 
 
 @router.get("/scraper/status")
-async def scraper_status(current_user: User = Depends(require_admin)):
+async def scraper_status(_: dict = Depends(require_admin)):
     """
     Get status of real scrapers.
     """
@@ -285,7 +285,7 @@ async def scraper_status(current_user: User = Depends(require_admin)):
 
 
 @router.post("/scraper/test")
-async def test_scrapers(query: str = Query("mouse", description="Test query"), current_user: User = Depends(require_admin)):
+async def test_scrapers(query: str = Query("mouse", description="Test query"), _: dict = Depends(require_admin)):
     """
     Test real scrapers with a query.
     This endpoint always uses real scraping.
