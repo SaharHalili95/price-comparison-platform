@@ -2,7 +2,15 @@ from pydantic_settings import BaseSettings
 from pydantic import model_validator
 from typing import List
 
+# Every placeholder value that has ever appeared in this repo's config
+# default or its .env.example, so copying either file verbatim is caught -
+# not just the one hardcoded in Settings below.
 INSECURE_JWT_SECRET_DEFAULT = "CHANGE-THIS-TO-A-RANDOM-64-CHAR-SECRET-IN-PRODUCTION"
+KNOWN_PLACEHOLDER_JWT_SECRETS = {
+    INSECURE_JWT_SECRET_DEFAULT,
+    "your-super-secret-key-change-in-production-min-64-chars",
+}
+MIN_JWT_SECRET_LENGTH = 32
 
 
 class Settings(BaseSettings):
@@ -40,11 +48,19 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _reject_insecure_jwt_secret_outside_debug(self) -> "Settings":
-        if not self.DEBUG and self.JWT_SECRET_KEY == INSECURE_JWT_SECRET_DEFAULT:
+        if self.DEBUG:
+            return self
+        if self.JWT_SECRET_KEY in KNOWN_PLACEHOLDER_JWT_SECRETS:
             raise RuntimeError(
-                "JWT_SECRET_KEY is still set to the insecure placeholder value. "
-                "Set a real random secret via the JWT_SECRET_KEY environment variable "
-                "before running outside DEBUG mode."
+                "JWT_SECRET_KEY is still set to a known placeholder value "
+                f"({self.JWT_SECRET_KEY!r}). Set a real random secret via the "
+                "JWT_SECRET_KEY environment variable before running outside DEBUG mode."
+            )
+        if len(self.JWT_SECRET_KEY) < MIN_JWT_SECRET_LENGTH:
+            raise RuntimeError(
+                f"JWT_SECRET_KEY is only {len(self.JWT_SECRET_KEY)} characters - "
+                f"set at least {MIN_JWT_SECRET_LENGTH} random characters via the "
+                "JWT_SECRET_KEY environment variable before running outside DEBUG mode."
             )
         return self
 
