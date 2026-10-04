@@ -6,6 +6,13 @@ import os
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# app.core.config.Settings() rejects the default placeholder JWT secret
+# outside DEBUG mode (see config.py). Tests don't need a real secret, but
+# importing app.main below instantiates Settings() immediately - without
+# this, anyone running `pytest` locally with a clean shell hits a crash at
+# collection time instead of getting test results.
+os.environ.setdefault("JWT_SECRET_KEY", "test-only-secret-not-for-production-use-1234567890")
+
 from app.main import app
 
 

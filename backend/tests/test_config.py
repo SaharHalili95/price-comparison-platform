@@ -17,7 +17,10 @@ def _settings(**overrides):
 
 
 def test_debug_mode_allows_placeholder():
-    s = _settings(DEBUG=True)
+    # Explicit JWT_SECRET_KEY, not relying on the class default - conftest
+    # sets a real one via the environment so local `pytest` runs don't
+    # need it configured, which would otherwise shadow the default here.
+    s = _settings(DEBUG=True, JWT_SECRET_KEY=next(iter(KNOWN_PLACEHOLDER_JWT_SECRETS)))
     assert s.JWT_SECRET_KEY in KNOWN_PLACEHOLDER_JWT_SECRETS
 
 
