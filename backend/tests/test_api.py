@@ -143,15 +143,25 @@ class TestProductsEndpoint:
 
 
 class TestScraperEndpoints:
-    """Tests for scraper status endpoints."""
+    """Tests for scraper status endpoints.
 
-    @pytest.fixture
-    def client(self):
-        return TestClient(app)
+    /api/scraper/status sits behind require_admin (added when product
+    browsing was opened to the public without auth) - this test called it
+    with no credentials and asserted 200, which stopped matching reality
+    the moment that guard landed. It's been red since.
+    """
 
-    def test_scraper_status(self, client):
-        """Test scraper status endpoint."""
+    def test_scraper_status_requires_admin(self, client):
+        """Unauthenticated access is rejected."""
         response = client.get("/api/scraper/status")
+        assert response.status_code == 403
+
+    def test_scraper_status(self, client, admin_token):
+        """Test scraper status endpoint with valid admin credentials."""
+        response = client.get(
+            "/api/scraper/status",
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
         assert response.status_code == 200
         data = response.json()
         assert "scrapers_available" in data
