@@ -7,7 +7,10 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
-from app.core.database import init_db
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
+
+from app.core.database import engine, init_db
 from app.core.rate_limiter import limiter
 from app.core.middleware import SecurityHeadersMiddleware
 from app.api.routes import router
@@ -39,14 +42,7 @@ app = FastAPI(
     title=settings.API_TITLE,
     version=settings.API_VERSION,
     description="""
-    Smart Price Comparison Platform API
-
-    This API provides endpoints to:
-    * Search for products
-    * Get product details with price comparisons
-    * Compare prices from multiple sources
-
-    All price data is validated using Pydantic models for data integrity.
+    Grocery price comparison on Israel's official price-transparency data.
     """,
     docs_url="/docs",
     redoc_url="/redoc",
@@ -82,13 +78,20 @@ async def root():
 
 
 @app.get("/health", tags=["health"])
-async def health_check():
-    """Detailed health check endpoint"""
+def health_check():
+    """Health check that actually queries the database."""
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+        database = "ok"
+    except SQLAlchemyError:
+        logger.exception("Database health check failed")
+        database = "error"
     return {
-        "status": "healthy",
+        "status": "healthy" if database == "ok" else "degraded",
         "api": settings.API_TITLE,
         "version": settings.API_VERSION,
-        "database": "connected"
+        "database": database,
     }
 
 

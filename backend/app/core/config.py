@@ -16,7 +16,7 @@ MIN_JWT_SECRET_LENGTH = 32
 class Settings(BaseSettings):
     """Application settings"""
 
-    DATABASE_URL: str = "sqlite:///./price_comparison.db"
+    DATABASE_URL: str = "postgresql+psycopg://salsmart:salsmart@localhost:5432/salsmart"
     API_TITLE: str = "Smart Price Comparison Platform"
     API_VERSION: str = "1.0.0"
     DEBUG: bool = False

@@ -1,6 +1,19 @@
-version: '3.8'
-
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: salsmart
+      POSTGRES_PASSWORD: salsmart
+      POSTGRES_DB: salsmart
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U salsmart"]
+      interval: 5s
+      retries: 10
+
   backend:
     build:
       context: .
@@ -9,14 +22,14 @@ services:
       - "8001:8000"
     environment:
       - DEBUG=false
-      - USE_REAL_SCRAPERS=false
-      # Required: app now refuses to start outside DEBUG with a placeholder
-      # or short secret (see backend/app/core/config.py). Set this in a
-      # .env file next to this compose file, or export it before running
-      # `docker compose up` - ${JWT_SECRET_KEY:?...} fails the command
-      # up front instead of crash-looping the container.
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?Set JWT_SECRET_KEY (32+ random chars) before running docker compose up}
-    restart: unless-stopped
+      - DATABASE_URL=postgresql+psycopg://salsmart:salsmart@db:5432/salsmart
+      # Required for the backend (32+ random chars, in .env or exported). The app refuses to start
+      # without it (backend/app/core/config.py). Not required for `docker compose up -d db`, which tests use.
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure:3
 
   frontend:
     build:
@@ -27,3 +40,6 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+
+volumes:
+  pgdata:
