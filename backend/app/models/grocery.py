@@ -50,7 +50,7 @@ class CurrentPrice(Base):
     store_pk: Mapped[int] = mapped_column(ForeignKey("stores.id"), primary_key=True)
     barcode: Mapped[str] = mapped_column(ForeignKey("items.barcode"), primary_key=True, index=True)
     price: Mapped[Decimal] = mapped_column(Numeric(10, 2))
-    unit_price: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
+    unit_price: Mapped[Decimal | None] = mapped_column(Numeric(12, 4))
     price_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     observed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 

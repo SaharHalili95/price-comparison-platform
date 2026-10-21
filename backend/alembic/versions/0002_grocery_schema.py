@@ -46,7 +46,7 @@ def upgrade() -> None:
             store_pk integer NOT NULL REFERENCES stores(id),
             barcode varchar(32) NOT NULL REFERENCES items(barcode),
             price numeric(10, 2) NOT NULL,
-            unit_price numeric(10, 2),
+            unit_price numeric(12, 4),
             price_updated_at timestamptz,
             observed_at timestamptz NOT NULL,
             PRIMARY KEY (store_pk, barcode)
