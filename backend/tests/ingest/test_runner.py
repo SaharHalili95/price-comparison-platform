@@ -121,3 +121,9 @@ def test_unreachable_portal_is_recorded_as_failed(session):
     assert "ReadTimeout" in run.errors[0]["error"]
     stored = session.execute(text("SELECT status FROM ingestion_runs")).scalar_one()
     assert stored == "failed"
+
+
+def test_max_stores_limits_the_price_files(session, feed_dir):
+    shutil.copy(feed_dir / PRICES, feed_dir / "PriceFull7290103152017-001-035-20261021-110502.gz")
+    run = run_chain("osher-ad", feed_dir, now=SAME_DAY, max_stores=1)
+    assert run.files_ok == 2  # the store list plus one price file

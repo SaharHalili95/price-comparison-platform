@@ -80,7 +80,7 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 export JWT_SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(48))")
 python -c "from app.core.database import init_db; init_db()"   # apply migrations
-python -m app.ingest rami-levy                                  # or osher-ad, yohananof, shufersal
+python -m app.ingest rami-levy        # 5 stores by default; --max-stores 0 loads every store
 ```
 
 Some chains block downloads from outside Israel, so live ingestion has to run from an Israeli network.

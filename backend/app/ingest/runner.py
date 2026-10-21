@@ -57,7 +57,7 @@ def _newest_per_store(files: list[FeedFile]) -> list[FeedFile]:
     return sorted((f for f in newest.values() if f.published_at >= cutoff), key=lambda f: f.name)
 
 
-def run_chain(slug: str, source: FeedClient | Path, now: datetime | None = None) -> IngestionRun:
+def run_chain(slug: str, source: FeedClient | Path, now: datetime | None = None, max_stores: int | None = None) -> IngestionRun:
     config = CHAINS[slug]
     client = DirectorySource(source) if isinstance(source, Path) else source
     now = now or datetime.now(timezone.utc)
@@ -78,7 +78,7 @@ def run_chain(slug: str, source: FeedClient | Path, now: datetime | None = None)
             errors.append({"file": "(listing)", "error": f"{type(error).__name__}: {error}"})
             files = []
         store_files = sorted((f for f in files if f.kind == "stores"), key=lambda f: f.published_at)
-        price_files = _newest_per_store([f for f in files if f.kind == "prices"])
+        price_files = _newest_per_store([f for f in files if f.kind == "prices"])[:max_stores]
 
         for file in store_files[-1:] + price_files:
             try:
