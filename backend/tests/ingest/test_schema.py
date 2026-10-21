@@ -35,3 +35,27 @@ def test_item_names_have_a_trigram_index():
     with engine.connect() as connection:
         indexes = connection.execute(text("SELECT indexdef FROM pg_indexes WHERE tablename = 'items'")).scalars().all()
     assert any("gin_trgm_ops" in definition for definition in indexes)
+
+
+def test_parallel_jobs_can_create_the_same_partition():
+    # Phase 3 runs one CronJob per chain in parallel; two of them may reach a new month at the same moment.
+    import threading
+
+    errors: list[Exception] = []
+    for month in range(1, 13):
+        barrier = threading.Barrier(6)
+
+        def create(day=date(2031, month, 1)) -> None:
+            try:
+                with engine.begin() as connection:
+                    barrier.wait()
+                    connection.execute(text("SELECT ensure_month_partition(:d)"), {"d": day})
+            except Exception as error:  # noqa: BLE001 - the test collects any failure
+                errors.append(error)
+
+        threads = [threading.Thread(target=create) for _ in range(6)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+    assert errors == []
