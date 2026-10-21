@@ -30,7 +30,7 @@ def admin_token(client):
     (e.g. /api/scraper/status, /api/scraper/test).
 
     Gets-or-creates a fixed admin row rather than inserting a fresh one
-    per run, since tests share the real sqlite file configured by
+    per run, since tests share the database configured by
     DATABASE_URL and a duplicate insert would hit the unique constraint
     on a second test run.
     """
@@ -57,47 +57,3 @@ def admin_token(client):
         return token
     finally:
         db.close()
-
-
-@pytest.fixture
-def sample_product():
-    """Sample product data for testing."""
-    return {
-        "id": 1,
-        "name": "iPhone 15 Pro Max 256GB",
-        "description": "iPhone 15 Pro Max עם מסך 6.7 אינץ׳",
-        "category": "אלקטרוניקה",
-        "image_url": None,
-        "base_price": 5299.0
-    }
-
-
-@pytest.fixture
-def sample_products():
-    """Multiple sample products for testing."""
-    return [
-        {
-            "id": 1,
-            "name": "iPhone 15 Pro Max 256GB",
-            "description": "iPhone 15 Pro Max עם מסך 6.7 אינץ׳",
-            "category": "אלקטרוניקה",
-            "image_url": None,
-            "base_price": 5299.0
-        },
-        {
-            "id": 201,
-            "name": "MacBook Air M3 15\" 16GB 512GB",
-            "description": "MacBook Air עם שבב M3",
-            "category": "מחשבים",
-            "image_url": None,
-            "base_price": 6299.0
-        },
-        {
-            "id": 401,
-            "name": "Nike Air Max 90",
-            "description": "נעלי Nike Air Max 90 קלאסיות",
-            "category": "אופנה",
-            "image_url": None,
-            "base_price": 549.0
-        }
-    ]
