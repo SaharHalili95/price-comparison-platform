@@ -19,6 +19,8 @@ from app.models.grocery import IngestionRun
 logger = logging.getLogger(__name__)
 
 STALE_AFTER = timedelta(days=2)
+# A store's file this much older than the chain's newest file is a leftover from a closed store.
+LEFTOVER_AFTER = timedelta(days=30)
 ISRAEL = ZoneInfo("Asia/Jerusalem")
 # PriceFull<chain>-<sub>-<store>-<date>... or pricefull<chain>-<store>-<date>...: the store is the part before the date.
 _STORE_IN_NAME = re.compile(r"-(\d+)-\d{8}(?:-?\d{4,6})?\.\w+$")
@@ -49,7 +51,10 @@ def _newest_per_store(files: list[FeedFile]) -> list[FeedFile]:
         current = newest.get(_store_of(file))
         if current is None or file.published_at > current.published_at:
             newest[_store_of(file)] = file
-    return sorted(newest.values(), key=lambda f: f.name)
+    if not newest:
+        return []
+    cutoff = max(f.published_at for f in newest.values()) - LEFTOVER_AFTER
+    return sorted((f for f in newest.values() if f.published_at >= cutoff), key=lambda f: f.name)
 
 
 def run_chain(slug: str, source: FeedClient | Path, now: datetime | None = None) -> IngestionRun:
@@ -66,7 +71,12 @@ def run_chain(slug: str, source: FeedClient | Path, now: datetime | None = None)
         # Counted locally: a rollback after a bad file would otherwise reset counters held on the ORM object.
         errors: list[dict[str, str]] = []
         files_ok = files_failed = items = price_changes = 0
-        files = client.list_files({"stores", "prices"})
+        try:
+            files = client.list_files({"stores", "prices"})
+        except Exception as error:  # an unreachable portal is a failed run, not a crash that leaves it "running"
+            logger.warning("Could not list files for %s: %s", slug, error)
+            errors.append({"file": "(listing)", "error": f"{type(error).__name__}: {error}"})
+            files = []
         store_files = sorted((f for f in files if f.kind == "stores"), key=lambda f: f.published_at)
         price_files = _newest_per_store([f for f in files if f.kind == "prices"])
 
@@ -77,6 +87,8 @@ def run_chain(slug: str, source: FeedClient | Path, now: datetime | None = None)
                     load_stores(session, parse_stores(data))
                 else:
                     stats = load_prices(session, parse_prices(data), now)
+                    if stats.items == 0 and stats.unknown_stores:
+                        raise ValueError(f"{stats.unknown_stores} prices for a store not in the store list")
                     items += stats.items
                     price_changes += stats.price_changes
                 files_ok += 1
