@@ -73,12 +73,22 @@ CREATE TEMP TABLE IF NOT EXISTS price_staging (
 )
 """
 
-# The last row wins when a file lists the same item twice for a store.
-_LATEST = """
+# The last row wins when a file lists the same item twice for a store. Stores are matched on chain and store number;
+# the sub-chain only breaks ties, because some chains (Yohananof) write 000 in price files and 001 in the store list.
+_STORE_MATCH = """
+JOIN LATERAL (
+    SELECT st.id FROM stores st
+    WHERE st.chain_id = p.chain_id AND st.store_id = p.store_id
+    ORDER BY (st.sub_chain_id = p.sub_chain_id) DESC, st.id
+    LIMIT 1
+) st ON true
+"""
+
+_LATEST = f"""
 latest AS (
     SELECT DISTINCT ON (st.id, p.barcode) st.id AS store_pk, p.*
     FROM price_staging p
-    JOIN stores st ON st.chain_id = p.chain_id AND st.sub_chain_id = p.sub_chain_id AND st.store_id = p.store_id
+    {_STORE_MATCH}
     ORDER BY st.id, p.barcode, p.seq DESC
 )
 """
@@ -93,8 +103,8 @@ def load_prices(session: Session, records: Iterable[PriceRecord], observed_at: d
         _copy(session, batch)
         stats.unknown_stores += session.execute(
             text(
-                "SELECT count(*) FROM price_staging p WHERE NOT EXISTS (SELECT 1 FROM stores st WHERE "
-                "st.chain_id = p.chain_id AND st.sub_chain_id = p.sub_chain_id AND st.store_id = p.store_id)"
+                "SELECT count(*) FROM price_staging p WHERE NOT EXISTS "
+                "(SELECT 1 FROM stores st WHERE st.chain_id = p.chain_id AND st.store_id = p.store_id)"
             )
         ).scalar_one()
         session.execute(

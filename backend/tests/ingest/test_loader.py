@@ -113,3 +113,22 @@ def test_full_sample_loads_quickly(session):
     stats = load_prices(session, spread, OCT_21)
     assert stats.items == 6000
     assert time.perf_counter() - start < 5
+
+
+def test_sub_chain_mismatch_still_finds_the_store(session):
+    # Yohananof's price files say sub-chain 000 while its store list says 001 for the same store.
+    load_osher_stores(session)
+    records = [replace(r, sub_chain_id="0") for r in osher_records()]
+    stats = load_prices(session, records, OCT_21)
+    assert stats.items == 200
+    assert stats.unknown_stores == 0
+
+
+def test_exact_sub_chain_wins_when_store_numbers_repeat(session):
+    load_osher_stores(session)
+    load_stores(session, [StoreRecord(OSHER, "2", "34", "other sub-chain", "", "")])
+    load_prices(session, osher_records()[:1], OCT_21)
+    store = session.execute(
+        text("SELECT s.sub_chain_id FROM current_prices c JOIN stores s ON s.id = c.store_pk")
+    ).scalar_one()
+    assert store == "1"
