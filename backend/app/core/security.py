@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Any
 
-from jose import jwt, JWTError
+import jwt
 from passlib.context import CryptContext
 
 from app.core.config import settings
@@ -71,7 +71,7 @@ def create_refresh_token(subject: int) -> tuple[str, str, datetime]:
 
 
 def decode_token(token: str) -> dict[str, Any]:
-    """Decode and validate a JWT. Raises JWTError on failure."""
+    """Decode and validate a JWT. Raises jwt.PyJWTError on failure."""
     return jwt.decode(
         token,
         settings.JWT_SECRET_KEY,
