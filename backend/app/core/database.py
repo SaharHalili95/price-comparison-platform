@@ -1,6 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
+from pathlib import Path
+
 from app.core.config import settings
+
+BACKEND_DIR = Path(__file__).resolve().parents[2]
 
 # Create SQLAlchemy engine
 engine = create_engine(settings.DATABASE_URL, pool_pre_ping=True)
@@ -22,5 +26,10 @@ def get_db():
 
 
 def init_db():
-    """Initialize database - create all tables"""
-    Base.metadata.create_all(bind=engine)
+    """Bring the schema up to date by running the Alembic migrations."""
+    from alembic import command
+    from alembic.config import Config
+
+    config = Config(str(BACKEND_DIR / "alembic.ini"))
+    config.set_main_option("script_location", str(BACKEND_DIR / "alembic"))
+    command.upgrade(config, "head")
