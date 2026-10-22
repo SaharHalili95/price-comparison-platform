@@ -1,0 +1,14 @@
+# k3s ships with Traefik as the ingress controller.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web
+spec:
+  rules:
+    - host: salsmart.example.com  # replace with your domain or the VM's sslip.io name, e.g. 1-2-3-4.sslip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service: { name: web, port: { number: 80 } }

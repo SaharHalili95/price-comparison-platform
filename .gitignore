@@ -56,3 +56,4 @@ dist-ssr/
 # Logs
 logs/
 *.log
+k8s/overlays/production/secrets.env

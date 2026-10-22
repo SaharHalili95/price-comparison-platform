@@ -4,7 +4,7 @@ Israeli supermarket chains are required by the price-transparency rules to publi
 
 SalSmart downloads those files, normalizes them into one database, and (in the next phases) lets shoppers search a product across chains, compare a whole basket in their city, and get an alert when a price drops.
 
-> **Status:** Phases 1-4 of 5. Ingestion, the API, the React UI, Kubernetes (tested on kind in CI) and price alerts work. The [live demo](https://saharhalili95.github.io/price-comparison-platform/) runs without a server on a real snapshot of about 300 products from 5 stores per chain (`backend/scripts/export_demo.py`).
+> **Status:** All 5 phases are built. Hosting needs only the account steps in [docs/deploy.md](docs/deploy.md). Ingestion, the API, the React UI, Kubernetes (tested on kind in CI), price alerts and monitoring work. The [live demo](https://saharhalili95.github.io/price-comparison-platform/) runs without a server on a real snapshot of about 300 products from 5 stores per chain (`backend/scripts/export_demo.py`).
 
 ## What the data looks like
 
@@ -115,7 +115,7 @@ cd backend && pytest
 2. **API and UI** (done): search, product page across chains, basket per city, ingestion status page.
 3. **Kubernetes** (done): a CronJob per chain, API, web, notifier, Postgres and RabbitMQ; `k8s/smoke-test.sh` deploys it to kind, ingests the samples and checks an alert email arrives.
 4. **Alerts** (done): price drops published to RabbitMQ, an email notifier that only acknowledges after sending, Google sign-in, saved baskets.
-5. **Monitoring and hosting:** Prometheus and Grafana, deployment on a free Israeli VM with k3s.
+5. **Monitoring and hosting** (done, deploy pending accounts): `/metrics`, Prometheus alert rules (stale chain, failed run, API down), a provisioned Grafana dashboard, multi-arch images on GHCR, and a production overlay for k3s on a free Oracle VM in Jerusalem ([docs/deploy.md](docs/deploy.md)).
 
 ## License
 

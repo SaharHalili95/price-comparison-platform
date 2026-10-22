@@ -1,0 +1,23 @@
+# k3s on a single free VM in an Israeli region (some chains block other countries).
+# Before applying: copy secrets.env.example to secrets.env (git-ignored) and fill it in, and set the host in ingress.yaml.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: salsmart
+resources:
+  - ../../base
+  - ingress.yaml
+components:
+  - ../../monitoring
+images:
+  - { name: salsmart-api, newName: ghcr.io/saharhalili95/salsmart-api, newTag: main }
+  - { name: salsmart-web, newName: ghcr.io/saharhalili95/salsmart-web, newTag: main }
+secretGenerator:
+  - name: salsmart-secrets
+    envs: [secrets.env]
+configMapGenerator:
+  - name: salsmart-mail
+    literals:
+      - host=smtp-relay.brevo.com
+      - port=587
+generatorOptions:
+  disableNameSuffixHash: true
