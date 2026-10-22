@@ -1,10 +1,32 @@
-# SalSmart: grocery price comparison on official data
+# SalSmart: grocery price comparison on Israel's official price data
 
-Israeli supermarket chains are required by the price-transparency rules to publish the full price list of every store, every day, as public XML files. Almost nobody uses them directly: the files come from several portals, in different formats and encodings, tens of megabytes per chain.
+[![CI](https://github.com/SaharHalili95/price-comparison-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/SaharHalili95/price-comparison-platform/actions/workflows/ci.yml)
 
-SalSmart downloads those files, normalizes them into one database, and (in the next phases) lets shoppers search a product across chains, compare a whole basket in their city, and get an alert when a price drops.
+**[Live demo](https://saharhalili95.github.io/price-comparison-platform/)** · Python · FastAPI · PostgreSQL · React · TypeScript · Docker · Kubernetes · RabbitMQ · Prometheus · Grafana · GitHub Actions
 
-> **Status:** All 5 phases are built. Hosting needs only the account steps in [docs/deploy.md](docs/deploy.md). Ingestion, the API, the React UI, Kubernetes (tested on kind in CI), price alerts and monitoring work. The [live demo](https://saharhalili95.github.io/price-comparison-platform/) runs without a server on a real snapshot of about 300 products from 5 stores per chain (`backend/scripts/export_demo.py`).
+Israeli supermarket chains must publish the full price list of every store, every day, as public XML files. The files are spread over several portals, in different formats and encodings, tens of megabytes per chain, so almost nobody uses them directly.
+
+SalSmart turns them into something a shopper can use: search a product and see its price in every store, compare a whole basket in your city, and get an email when a price drops.
+
+| Search | Basket compared across stores |
+| --- | --- |
+| ![Product search](docs/screenshots/search.jpg) | ![Basket ranked by store](docs/screenshots/basket.jpg) |
+
+**In numbers:**
+- **1.6 million prices in one run:** a single ingestion of three chains loaded 1,641,356 prices for 39,812 products in 174 stores, in about 3.5 minutes.
+- **Re-runs add nothing:** re-loading a day adds zero history rows, because history is stored only when a price changes.
+- **Bounded memory:** a 34 MB price file is parsed while memory grows by about 1 MB.
+- **Tests:** 93 backend tests on a real PostgreSQL, plus frontend tests and a Kubernetes smoke test in CI.
+
+**Where the code is:**
+
+| Part | What it does | Code |
+| --- | --- | --- |
+| Ingestion | Feed clients, streaming XML parsers, change-only history | `backend/app/ingest/` |
+| API | Search, prices per store, basket comparison, ingestion status, `/metrics` | `backend/app/api/`, `backend/app/metrics.py` |
+| Alerts | Price drops to RabbitMQ, an email worker, Google sign-in | `backend/app/alerts/` |
+| UI | Hebrew (RTL) React app; the demo runs on a real data snapshot without a server | `frontend/src/` |
+| Platform | A CronJob per chain, Postgres, RabbitMQ, Prometheus and Grafana on Kubernetes | `k8s/` |
 
 ## What the data looks like
 
