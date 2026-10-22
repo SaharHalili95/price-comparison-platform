@@ -26,6 +26,9 @@ spec:
                 - { name: DATABASE_URL, value: "postgresql+psycopg://salsmart:$(DB_PASSWORD)@db:5432/salsmart" }
                 - name: JWT_SECRET_KEY
                   valueFrom: { secretKeyRef: { name: salsmart-secrets, key: jwt-secret } }
+                - name: RABBITMQ_PASSWORD
+                  valueFrom: { secretKeyRef: { name: salsmart-secrets, key: rabbitmq-password } }
+                - { name: RABBITMQ_URL, value: "amqp://salsmart:$(RABBITMQ_PASSWORD)@rabbitmq:5672/%2F" }
               resources:
                 requests: { cpu: 100m, memory: 128Mi }
                 limits: { memory: 256Mi }
@@ -58,6 +61,9 @@ spec:
                 - { name: DATABASE_URL, value: "postgresql+psycopg://salsmart:$(DB_PASSWORD)@db:5432/salsmart" }
                 - name: JWT_SECRET_KEY
                   valueFrom: { secretKeyRef: { name: salsmart-secrets, key: jwt-secret } }
+                - name: RABBITMQ_PASSWORD
+                  valueFrom: { secretKeyRef: { name: salsmart-secrets, key: rabbitmq-password } }
+                - { name: RABBITMQ_URL, value: "amqp://salsmart:$(RABBITMQ_PASSWORD)@rabbitmq:5672/%2F" }
               resources:
                 requests: { cpu: 100m, memory: 128Mi }
                 limits: { memory: 256Mi }
@@ -90,6 +96,9 @@ spec:
                 - { name: DATABASE_URL, value: "postgresql+psycopg://salsmart:$(DB_PASSWORD)@db:5432/salsmart" }
                 - name: JWT_SECRET_KEY
                   valueFrom: { secretKeyRef: { name: salsmart-secrets, key: jwt-secret } }
+                - name: RABBITMQ_PASSWORD
+                  valueFrom: { secretKeyRef: { name: salsmart-secrets, key: rabbitmq-password } }
+                - { name: RABBITMQ_URL, value: "amqp://salsmart:$(RABBITMQ_PASSWORD)@rabbitmq:5672/%2F" }
               resources:
                 requests: { cpu: 100m, memory: 128Mi }
                 limits: { memory: 256Mi }
@@ -122,6 +131,9 @@ spec:
                 - { name: DATABASE_URL, value: "postgresql+psycopg://salsmart:$(DB_PASSWORD)@db:5432/salsmart" }
                 - name: JWT_SECRET_KEY
                   valueFrom: { secretKeyRef: { name: salsmart-secrets, key: jwt-secret } }
+                - name: RABBITMQ_PASSWORD
+                  valueFrom: { secretKeyRef: { name: salsmart-secrets, key: rabbitmq-password } }
+                - { name: RABBITMQ_URL, value: "amqp://salsmart:$(RABBITMQ_PASSWORD)@rabbitmq:5672/%2F" }
               resources:
                 requests: { cpu: 100m, memory: 128Mi }
                 limits: { memory: 256Mi }

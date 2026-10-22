@@ -15,14 +15,28 @@ kubectl -n salsmart rollout status statefulset/db --timeout=180s
 kubectl -n salsmart rollout status deployment/api --timeout=180s
 kubectl -n salsmart rollout status deployment/web --timeout=120s
 kubectl -n salsmart wait --for=condition=complete job/smoke-ingest --timeout=300s
+kubectl -n salsmart rollout status statefulset/rabbitmq --timeout=240s
+kubectl -n salsmart rollout status deployment/notifier --timeout=240s
 
 kubectl -n salsmart port-forward service/web 8088:80 >/dev/null 2>&1 &
-trap 'kill %1' EXIT
+trap 'kill $(jobs -p) 2>/dev/null' EXIT
 for _ in $(seq 30); do curl -sf localhost:8088/api/status >/dev/null && break; sleep 1; done
 status=$(curl -sf localhost:8088/api/status)
 echo "status: $status"
 echo "$status" | grep -Eq '"status":"(success|stale)"'  # the recorded samples age into stale
 curl -sf "localhost:8088/api/items/7290107947473" | grep -q '"price":13.9'
 curl -sf localhost:8088/ | grep -q SalSmart
+for _ in $(seq 30); do kubectl -n salsmart logs deployment/notifier 2>/dev/null | grep -q "Waiting for price alerts" && break; sleep 2; done
+kubectl -n salsmart logs deployment/notifier | grep -q "Waiting for price alerts"
+# End to end: a published alert must come out of the notifier as an email in Mailpit.
+kubectl -n salsmart exec deployment/notifier -- python -c "
+from app.alerts.events import AlertEvent
+from app.alerts.queue import publish
+from app.core.config import settings
+publish(settings.RABBITMQ_URL, [AlertEvent(0, 'smoke@example.com', '1', 'smoke-item', 1.0, 2.0, 'chain', 'store').to_json()])"
+kubectl -n salsmart port-forward service/mailpit 8025:8025 >/dev/null 2>&1 &
+for _ in $(seq 30); do curl -sf localhost:8025/api/v1/messages | grep -q smoke-item && break; sleep 1; done
+curl -sf localhost:8025/api/v1/messages | grep -q smoke-item
+echo "alert email delivered"
 kubectl -n salsmart get cronjobs
 echo "kind smoke test passed"

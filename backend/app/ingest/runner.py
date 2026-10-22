@@ -9,6 +9,8 @@ from zoneinfo import ZoneInfo
 
 from sqlalchemy.orm import Session
 
+from app.alerts.events import find_triggered_alerts, mark_notified
+from app.core.config import settings
 from app.core.database import SessionLocal
 from app.ingest.feeds.base import FeedClient, FeedFile, to_feed_file
 from app.ingest.feeds.chains import CHAINS
@@ -112,8 +114,27 @@ def run_chain(slug: str, source: FeedClient | Path, now: datetime | None = None,
         else:
             run.status = "success"
         session.commit()
+        _publish_alerts(session, now)
         session.refresh(run)
         session.expunge(run)
         return run
     finally:
         session.close()
+
+
+def _publish_alerts(session: Session, observed_at: datetime) -> None:
+    """Hands triggered alerts to RabbitMQ. A broker outage is logged and never fails the ingestion."""
+    if not settings.RABBITMQ_URL:
+        return
+    from app.alerts.queue import publish
+
+    events = find_triggered_alerts(session, observed_at)
+    if not events:
+        return
+    try:
+        publish(settings.RABBITMQ_URL, [e.to_json() for e in events])
+    except Exception:
+        logger.exception("Could not publish %d price alerts", len(events))
+        return
+    mark_notified(session, [e.alert_id for e in events], observed_at)
+    logger.info("Published %d price alerts", len(events))

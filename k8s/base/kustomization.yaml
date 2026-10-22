@@ -7,3 +7,5 @@ resources:
   - api.yaml
   - web.yaml
   - ingest-cronjobs.yaml
+  - rabbitmq.yaml
+  - notifier.yaml

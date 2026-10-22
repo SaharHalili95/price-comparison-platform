@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
+import { accountsEnabled, createAlert, getToken } from '../data/account'
 import { api } from '../data/api'
 import { useBasket } from '../data/basket'
 import type { ItemDetail } from '../data/types'
@@ -9,6 +10,7 @@ export default function ItemPage() {
   const { barcode = '' } = useParams()
   const [item, setItem] = useState<ItemDetail | null | undefined>(undefined)
   const basket = useBasket()
+  const [alertSet, setAlertSet] = useState(false)
 
   useEffect(() => {
     api.item(barcode).then(setItem).catch(() => setItem(null))
@@ -29,6 +31,16 @@ export default function ItemPage() {
       >
         {basket.has(item.barcode) ? 'בסל' : 'הוסף לסל'}
       </button>
+      {accountsEnabled && (
+        getToken() ? (
+          <button className="ms-2 mt-3 rounded-lg border border-blue-700 px-4 py-2 text-blue-700 disabled:opacity-50" disabled={alertSet}
+            onClick={() => createAlert(item.barcode).then(() => setAlertSet(true))}>
+            {alertSet ? 'נשמרה התראה' : 'התראה על ירידת מחיר'}
+          </button>
+        ) : (
+          <Link to="/alerts" className="ms-2 text-sm text-blue-700 underline">התחברו להתראות מחיר</Link>
+        )
+      )}
       <div className="mt-4 overflow-x-auto">
         <table className="w-full min-w-[480px] text-right">
           <thead className="text-sm text-slate-500">

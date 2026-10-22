@@ -94,3 +94,12 @@ def session():
     finally:
         db.rollback()
         db.close()
+
+
+@pytest.fixture(autouse=True)
+def reset_rate_limits():
+    """Sign-in endpoints allow 10 requests a minute; tests sign in far more often than that."""
+    from app.core.rate_limiter import limiter
+
+    limiter.reset()
+    yield

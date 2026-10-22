@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String, Text, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -69,3 +69,23 @@ class IngestionRun(Base):
     items: Mapped[int] = mapped_column(Integer, default=0)
     price_changes: Mapped[int] = mapped_column(Integer, default=0)
     errors: Mapped[list[dict[str, str]]] = mapped_column(JSONB, default=list)
+
+
+class PriceAlert(Base):
+    __tablename__ = "price_alerts"
+    __table_args__ = (UniqueConstraint("user_id", "barcode"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    barcode: Mapped[str] = mapped_column(ForeignKey("items.barcode"), index=True)
+    target_price: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    last_notified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class SavedBasket(Base):
+    __tablename__ = "saved_baskets"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    barcodes: Mapped[list[str]] = mapped_column(JSONB, default=list)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

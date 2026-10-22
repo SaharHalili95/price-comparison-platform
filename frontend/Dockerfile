@@ -4,7 +4,8 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 # Served from the site root and talking to the API through nginx, not the GitHub Pages snapshot.
-ENV VITE_BASE=/ VITE_API_URL=/api
+ARG VITE_GOOGLE_CLIENT_ID=
+ENV VITE_BASE=/ VITE_API_URL=/api VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
 RUN npm run build
 
 FROM nginx:1.27-alpine

@@ -27,6 +27,17 @@ class Settings(BaseSettings):
         "https://saharhalili95.github.io",
     ]
 
+    # Sign in with Google: the OAuth client ID from Google Cloud Console. Empty disables the endpoint.
+    GOOGLE_CLIENT_ID: str = ""
+
+    # Price alerts: the ingestion publishes to RabbitMQ (empty disables publishing), the notifier sends email.
+    RABBITMQ_URL: str = ""
+    SMTP_HOST: str = "localhost"
+    SMTP_PORT: int = 1025
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    ALERT_FROM: str = "SalSmart <alerts@salsmart.local>"
+
     # JWT Settings
     JWT_SECRET_KEY: str = INSECURE_JWT_SECRET_DEFAULT
     JWT_ALGORITHM: str = "HS256"

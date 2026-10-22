@@ -4,7 +4,7 @@ Israeli supermarket chains are required by the price-transparency rules to publi
 
 SalSmart downloads those files, normalizes them into one database, and (in the next phases) lets shoppers search a product across chains, compare a whole basket in their city, and get an alert when a price drops.
 
-> **Status:** Phases 1-2 of 5. Ingestion, the API and the React UI work. The [live demo](https://saharhalili95.github.io/price-comparison-platform/) runs without a server on a real snapshot of about 300 products from 5 stores per chain (`backend/scripts/export_demo.py`).
+> **Status:** Phases 1-4 of 5. Ingestion, the API, the React UI, Kubernetes (tested on kind in CI) and price alerts work. The [live demo](https://saharhalili95.github.io/price-comparison-platform/) runs without a server on a real snapshot of about 300 products from 5 stores per chain (`backend/scripts/export_demo.py`).
 
 ## What the data looks like
 
@@ -69,6 +69,19 @@ flowchart LR
 - `items.name` has a trigram index for the search coming in Phase 2.
 - The schema is managed by Alembic migrations.
 
+## Price alerts
+
+```mermaid
+flowchart LR
+    J[Ingestion job] -- price drops --> Q[(RabbitMQ<br/>price-alerts)]
+    Q --> N[Notifier] --> M[Email]
+```
+
+- **The ingestion only publishes.** A slow or broken mail service never delays ingestion. If RabbitMQ is down, the run still succeeds and the alerts stay pending for the next run.
+- **The notifier acknowledges a message only after the email is sent.** Failures go back to the queue after a 5-second pause.
+- **Each alert fires once per price drop**, and only when the drop reaches the target price, if one is set.
+- **Configuration:** set `GOOGLE_CLIENT_ID` (backend) and `VITE_GOOGLE_CLIENT_ID` (frontend build) to an OAuth client from Google Cloud Console, and `SMTP_*` for a real mail provider. Locally, Mailpit catches the emails.
+
 ## Running it
 
 Requirements: Python 3.12, Docker.
@@ -100,8 +113,8 @@ cd backend && pytest
 
 1. **Data core** (done): feed clients, parsers, change-only history, ingestion runs.
 2. **API and UI** (done): search, product page across chains, basket per city, ingestion status page.
-3. **Kubernetes:** a CronJob per chain, API, worker, Postgres and RabbitMQ, tested on kind in CI.
-4. **Alerts:** price-change events on RabbitMQ, email notifier, Google sign-in, saved baskets.
+3. **Kubernetes** (done): a CronJob per chain, API, web, notifier, Postgres and RabbitMQ; `k8s/smoke-test.sh` deploys it to kind, ingests the samples and checks an alert email arrives.
+4. **Alerts** (done): price drops published to RabbitMQ, an email notifier that only acknowledges after sending, Google sign-in, saved baskets.
 5. **Monitoring and hosting:** Prometheus and Grafana, deployment on a free Israeli VM with k3s.
 
 ## License

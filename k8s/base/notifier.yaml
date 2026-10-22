@@ -1,0 +1,34 @@
+# Sends the price-alert emails that ingestion publishes to RabbitMQ.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notifier
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: notifier }
+  template:
+    metadata:
+      labels: { app: notifier }
+    spec:
+      containers:
+        - name: notifier
+          image: salsmart-api
+          command: [python, -m, app.alerts.notifier]
+          env:
+            - name: JWT_SECRET_KEY
+              valueFrom: { secretKeyRef: { name: salsmart-secrets, key: jwt-secret } }
+            - name: RABBITMQ_PASSWORD
+              valueFrom: { secretKeyRef: { name: salsmart-secrets, key: rabbitmq-password } }
+            - { name: RABBITMQ_URL, value: "amqp://salsmart:$(RABBITMQ_PASSWORD)@rabbitmq:5672/%2F" }
+            - name: SMTP_HOST
+              valueFrom: { configMapKeyRef: { name: salsmart-mail, key: host } }
+            - name: SMTP_PORT
+              valueFrom: { configMapKeyRef: { name: salsmart-mail, key: port } }
+            - name: SMTP_USER
+              valueFrom: { secretKeyRef: { name: salsmart-secrets, key: smtp-user, optional: true } }
+            - name: SMTP_PASSWORD
+              valueFrom: { secretKeyRef: { name: salsmart-secrets, key: smtp-password, optional: true } }
+          resources:
+            requests: { cpu: 10m, memory: 64Mi }
+            limits: { memory: 128Mi }

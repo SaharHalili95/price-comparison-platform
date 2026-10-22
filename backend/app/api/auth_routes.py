@@ -18,6 +18,10 @@ from app.schemas.auth import (
     MessageResponse,
 )
 from app.services.auth_service import AuthService
+from app.core.config import settings
+from app.core.security import hash_password
+from pydantic import BaseModel
+import secrets
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/auth", tags=["authentication"])
@@ -138,3 +142,48 @@ async def get_current_user_profile(
 ):
     """Get the current authenticated user's profile."""
     return current_user
+
+
+class GoogleSignInRequest(BaseModel):
+    credential: str
+
+
+def verify_google_token(token: str, client_id: str) -> dict:
+    """Checks the Google ID token's signature, audience and expiry."""
+    from google.auth.transport import requests as google_requests
+    from google.oauth2 import id_token
+
+    return id_token.verify_oauth2_token(token, google_requests.Request(), client_id)
+
+
+@router.post("/google", response_model=TokenResponse)
+@limiter.limit("10/minute")
+async def google_sign_in(request: Request, body: GoogleSignInRequest, db: Session = Depends(get_db)):
+    """Sign in with a Google ID token from the Google Identity Services button; creates the account on first use."""
+    if not settings.GOOGLE_CLIENT_ID:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Google sign-in is not configured")
+    try:
+        claims = verify_google_token(body.credential, settings.GOOGLE_CLIENT_ID)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Google token")
+    email = str(claims.get("email", "")).lower()
+    if not email or not claims.get("email_verified"):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Google account email is not verified")
+
+    user = db.query(User).filter(User.email == email).first()
+    if user is None:
+        user = User(
+            email=email,
+            username=f"{email.split('@')[0][:80]}-{secrets.token_hex(3)}",
+            # No password sign-in for Google accounts: a random secret nobody knows.
+            hashed_password=hash_password(secrets.token_urlsafe(32)),
+            full_name=claims.get("name"),
+            is_verified=True,
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    access_token, refresh_token, expires_in = AuthService.create_session(db, user, request)
+    AuthService.log_event(db, "login_google", user_id=user.id, request=request)
+    return TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=expires_in)

@@ -1,6 +1,8 @@
 import { NavLink, Route, Routes } from 'react-router-dom'
+import { accountsEnabled } from './data/account'
 import { isDemo } from './data/api'
 import { useBasket } from './data/basket'
+import AlertsPage from './pages/AlertsPage'
 import BasketPage from './pages/BasketPage'
 import ItemPage from './pages/ItemPage'
 import SearchPage from './pages/SearchPage'
@@ -17,6 +19,7 @@ export default function App() {
           <strong className="me-auto text-lg text-blue-800">SalSmart</strong>
           <NavLink to="/" end className={link}>חיפוש</NavLink>
           <NavLink to="/basket" className={link}>סל ({basket.lines.length})</NavLink>
+          {accountsEnabled && <NavLink to="/alerts" className={link}>התראות</NavLink>}
           <NavLink to="/status" className={link}>סטטוס</NavLink>
         </nav>
       </header>
@@ -31,6 +34,7 @@ export default function App() {
           <Route path="/item/:barcode" element={<ItemPage />} />
           <Route path="/basket" element={<BasketPage />} />
           <Route path="/status" element={<StatusPage />} />
+          {accountsEnabled && <Route path="/alerts" element={<AlertsPage />} />}
         </Routes>
       </main>
     </div>
