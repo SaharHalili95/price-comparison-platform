@@ -1,0 +1,20 @@
+server {
+    listen 80;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # API_UPSTREAM is filled in at start-up by the nginx image (envsubst over /etc/nginx/templates).
+    location /api/ {
+        proxy_pass ${API_UPSTREAM};
+        proxy_set_header Host $host;
+    }
+
+    location ~* \.(js|css|svg)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}

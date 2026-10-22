@@ -1,0 +1,127 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ingest-rami-levy
+spec:
+  # Store lists are published around 05:00; one chain at a time keeps the database load low.
+  schedule: "30 5 * * *"
+  timeZone: Asia/Jerusalem
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 1800
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: ingest
+              image: salsmart-api
+              command: [python, -m, app.ingest, rami-levy]
+              env:
+                - name: DB_PASSWORD
+                  valueFrom: { secretKeyRef: { name: salsmart-secrets, key: db-password } }
+                - { name: DATABASE_URL, value: "postgresql+psycopg://salsmart:$(DB_PASSWORD)@db:5432/salsmart" }
+                - name: JWT_SECRET_KEY
+                  valueFrom: { secretKeyRef: { name: salsmart-secrets, key: jwt-secret } }
+              resources:
+                requests: { cpu: 100m, memory: 128Mi }
+                limits: { memory: 256Mi }
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ingest-osher-ad
+spec:
+  # Store lists are published around 05:00; one chain at a time keeps the database load low.
+  schedule: "40 5 * * *"
+  timeZone: Asia/Jerusalem
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 1800
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: ingest
+              image: salsmart-api
+              command: [python, -m, app.ingest, osher-ad]
+              env:
+                - name: DB_PASSWORD
+                  valueFrom: { secretKeyRef: { name: salsmart-secrets, key: db-password } }
+                - { name: DATABASE_URL, value: "postgresql+psycopg://salsmart:$(DB_PASSWORD)@db:5432/salsmart" }
+                - name: JWT_SECRET_KEY
+                  valueFrom: { secretKeyRef: { name: salsmart-secrets, key: jwt-secret } }
+              resources:
+                requests: { cpu: 100m, memory: 128Mi }
+                limits: { memory: 256Mi }
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ingest-yohananof
+spec:
+  # Store lists are published around 05:00; one chain at a time keeps the database load low.
+  schedule: "50 5 * * *"
+  timeZone: Asia/Jerusalem
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 1800
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: ingest
+              image: salsmart-api
+              command: [python, -m, app.ingest, yohananof]
+              env:
+                - name: DB_PASSWORD
+                  valueFrom: { secretKeyRef: { name: salsmart-secrets, key: db-password } }
+                - { name: DATABASE_URL, value: "postgresql+psycopg://salsmart:$(DB_PASSWORD)@db:5432/salsmart" }
+                - name: JWT_SECRET_KEY
+                  valueFrom: { secretKeyRef: { name: salsmart-secrets, key: jwt-secret } }
+              resources:
+                requests: { cpu: 100m, memory: 128Mi }
+                limits: { memory: 256Mi }
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ingest-shufersal
+spec:
+  # Store lists are published around 05:00; one chain at a time keeps the database load low.
+  schedule: "0 6 * * *"
+  timeZone: Asia/Jerusalem
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 1800
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: ingest
+              image: salsmart-api
+              command: [python, -m, app.ingest, shufersal]
+              env:
+                - name: DB_PASSWORD
+                  valueFrom: { secretKeyRef: { name: salsmart-secrets, key: db-password } }
+                - { name: DATABASE_URL, value: "postgresql+psycopg://salsmart:$(DB_PASSWORD)@db:5432/salsmart" }
+                - name: JWT_SECRET_KEY
+                  valueFrom: { secretKeyRef: { name: salsmart-secrets, key: jwt-secret } }
+              resources:
+                requests: { cpu: 100m, memory: 128Mi }
+                limits: { memory: 256Mi }

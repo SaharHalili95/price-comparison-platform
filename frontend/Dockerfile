@@ -1,25 +1,14 @@
-# Build stage
-FROM node:18-alpine as build
-
+FROM node:22-alpine AS build
 WORKDIR /app
-
-# Install dependencies
 COPY package*.json ./
 RUN npm ci
-
-# Copy source code and build
 COPY . .
+# Served from the site root and talking to the API through nginx, not the GitHub Pages snapshot.
+ENV VITE_BASE=/ VITE_API_URL=/api
 RUN npm run build
 
-# Production stage
-FROM nginx:alpine
-
-# Copy built assets
+FROM nginx:1.27-alpine
 COPY --from=build /app/dist /usr/share/nginx/html
-
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+ENV API_UPSTREAM=http://api:8000
 EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]

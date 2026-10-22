@@ -53,3 +53,12 @@ jobs:
       - run: pip install -r requirements.txt pip-audit==2.10.1
       - run: python -m pytest -v
       - run: pip-audit -r requirements.txt
+
+  kubernetes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: helm/kind-action@v1
+        with:
+          cluster_name: salsmart
+      - run: k8s/smoke-test.sh

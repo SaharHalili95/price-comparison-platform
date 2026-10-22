@@ -1,0 +1,28 @@
+# Local cluster (kind) and CI: images built on the machine, throwaway secrets.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+  - smoke-ingest-job.yaml
+namespace: salsmart
+images:
+  - { name: salsmart-api, newName: salsmart-api, newTag: local }
+  - { name: salsmart-web, newName: salsmart-web, newTag: local }
+secretGenerator:
+  - name: salsmart-secrets
+    literals:
+      - db-password=local-only-password
+      - jwt-secret=local-only-jwt-secret-not-for-production-0123456789
+generatorOptions:
+  disableNameSuffixHash: true
+patches:
+  - target: { kind: Deployment }
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Never
+  - target: { kind: CronJob }
+    patch: |-
+      - op: add
+        path: /spec/jobTemplate/spec/template/spec/containers/0/imagePullPolicy
+        value: Never

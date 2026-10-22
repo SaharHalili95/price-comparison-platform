@@ -1,0 +1,21 @@
+# Runs one ingestion from the recorded samples baked into the image, since CI runners cannot reach the chains.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: smoke-ingest
+spec:
+  backoffLimit: 6
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: ingest
+          image: salsmart-api
+          imagePullPolicy: Never
+          command: [python, -m, app.ingest, osher-ad, --from-dir, tests/fixtures/feeds/osher-ad]
+          env:
+            - name: DB_PASSWORD
+              valueFrom: { secretKeyRef: { name: salsmart-secrets, key: db-password } }
+            - { name: DATABASE_URL, value: "postgresql+psycopg://salsmart:$(DB_PASSWORD)@db:5432/salsmart" }
+            - name: JWT_SECRET_KEY
+              valueFrom: { secretKeyRef: { name: salsmart-secrets, key: jwt-secret } }
