@@ -1,19 +1,20 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
-import { AuthProvider } from './contexts/AuthContext'
-import App from './App.tsx'
-import ErrorBoundary from './components/ErrorBoundary.tsx'
+import { HashRouter } from 'react-router-dom'
+import App from './App'
+import ErrorBoundary from './components/ErrorBoundary'
+import { BasketProvider } from './data/basket'
 import './styles/index.css'
 
+// Hash URLs work on GitHub Pages, which cannot rewrite deep links.
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <BrowserRouter basename="/price-comparison-platform">
-        <AuthProvider>
+      <HashRouter>
+        <BasketProvider>
           <App />
-        </AuthProvider>
-      </BrowserRouter>
+        </BasketProvider>
+      </HashRouter>
     </ErrorBoundary>
   </React.StrictMode>,
 )

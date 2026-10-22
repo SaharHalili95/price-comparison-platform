@@ -4,7 +4,7 @@ Israeli supermarket chains are required by the price-transparency rules to publi
 
 SalSmart downloads those files, normalizes them into one database, and (in the next phases) lets shoppers search a product across chains, compare a whole basket in their city, and get an alert when a price drops.
 
-> **Status:** Phase 1 of 5, the data core. Ingestion works end to end against the live feeds. The API, UI, Kubernetes deployment, alerts and monitoring are the next phases (see [Roadmap](#roadmap)). The React UI in `frontend/` still shows the old demo data until Phase 2 replaces it.
+> **Status:** Phases 1-2 of 5. Ingestion, the API and the React UI work. The [live demo](https://saharhalili95.github.io/price-comparison-platform/) runs without a server on a real snapshot of about 300 products from 5 stores per chain (`backend/scripts/export_demo.py`).
 
 ## What the data looks like
 
@@ -99,7 +99,7 @@ cd backend && pytest
 ## Roadmap
 
 1. **Data core** (done): feed clients, parsers, change-only history, ingestion runs.
-2. **API and UI:** search, product page across chains, basket per city, ingestion status page.
+2. **API and UI** (done): search, product page across chains, basket per city, ingestion status page.
 3. **Kubernetes:** a CronJob per chain, API, worker, Postgres and RabbitMQ, tested on kind in CI.
 4. **Alerts:** price-change events on RabbitMQ, email notifier, Google sign-in, saved baskets.
 5. **Monitoring and hosting:** Prometheus and Grafana, deployment on a free Israeli VM with k3s.

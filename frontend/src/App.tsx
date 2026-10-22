@@ -1,53 +1,38 @@
-import { useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
-import Layout from './components/Layout';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import HomePage from './pages/HomePage';
+import { NavLink, Route, Routes } from 'react-router-dom'
+import { isDemo } from './data/api'
+import { useBasket } from './data/basket'
+import BasketPage from './pages/BasketPage'
+import ItemPage from './pages/ItemPage'
+import SearchPage from './pages/SearchPage'
+import StatusPage from './pages/StatusPage'
 
-function App() {
-  const [categorySearch, setCategorySearch] = useState<string | null>(null);
-  const [showFavorites, setShowFavorites] = useState(false);
+const link = ({ isActive }: { isActive: boolean }) => `px-3 py-2 rounded-lg ${isActive ? 'bg-blue-700 text-white' : 'text-slate-700'}`
 
-  const handleHome = () => {
-    setCategorySearch(null);
-    setShowFavorites(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleCategorySearch = (category: string) => {
-    setCategorySearch(category);
-    setShowFavorites(false);
-  };
-
-  const handleShowFavorites = () => {
-    setShowFavorites(true);
-    setCategorySearch(null);
-  };
-
+export default function App() {
+  const basket = useBasket()
   return (
-    <Layout
-      onHome={handleHome}
-      onCategorySearch={handleCategorySearch}
-      onShowFavorites={handleShowFavorites}
-      favoritesCount={0}
-    >
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route
-          path="/"
-          element={
-            <HomePage
-              onCategorySearch={categorySearch}
-              showFavoritesView={showFavorites}
-              onResetFavoritesView={() => setShowFavorites(false)}
-            />
-          }
-        />
-      </Routes>
-    </Layout>
-  );
+    <div className="min-h-screen bg-white text-slate-900">
+      <header className="border-b border-slate-200">
+        <nav className="mx-auto flex max-w-3xl items-center gap-1 px-4 py-3">
+          <strong className="me-auto text-lg text-blue-800">SalSmart</strong>
+          <NavLink to="/" end className={link}>חיפוש</NavLink>
+          <NavLink to="/basket" className={link}>סל ({basket.lines.length})</NavLink>
+          <NavLink to="/status" className={link}>סטטוס</NavLink>
+        </nav>
+      </header>
+      {isDemo && (
+        <p className="bg-amber-50 px-4 py-2 text-center text-sm text-amber-900">
+          גרסת דמו: מדגם אמיתי של כמה מאות מוצרים מ-5 סניפים לכל רשת, שנשמר מקבצי המחירים הרשמיים.
+        </p>
+      )}
+      <main className="mx-auto max-w-3xl px-4 py-6">
+        <Routes>
+          <Route path="/" element={<SearchPage />} />
+          <Route path="/item/:barcode" element={<ItemPage />} />
+          <Route path="/basket" element={<BasketPage />} />
+          <Route path="/status" element={<StatusPage />} />
+        </Routes>
+      </main>
+    </div>
+  )
 }
-
-export default App;
