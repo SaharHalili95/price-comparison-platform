@@ -77,3 +77,20 @@ def admin_token(client):
         return token
     finally:
         db.close()
+
+
+from sqlalchemy import text  # noqa: E402
+
+from app.core.database import SessionLocal  # noqa: E402
+
+
+@pytest.fixture
+def session():
+    db = SessionLocal()
+    db.execute(text("TRUNCATE price_history, current_prices, items, stores, ingestion_runs, chains RESTART IDENTITY CASCADE"))
+    db.commit()
+    try:
+        yield db
+    finally:
+        db.rollback()
+        db.close()
