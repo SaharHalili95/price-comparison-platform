@@ -6,6 +6,8 @@ resources:
   - smoke-ingest-job.yaml
   - mailpit.yaml
 namespace: salsmart
+components:
+  - ../../monitoring
 images:
   - { name: salsmart-api, newName: salsmart-api, newTag: local }
   - { name: salsmart-web, newName: salsmart-web, newTag: local }

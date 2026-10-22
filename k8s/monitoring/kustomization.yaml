@@ -1,0 +1,13 @@
+# Prometheus and Grafana for the cluster. Included by overlays that want monitoring in-cluster.
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+  - prometheus.yaml
+  - grafana.yaml
+configMapGenerator:
+  - name: prometheus-config
+    files: [prometheus.yml, alerts.yml]
+  - name: grafana-provisioning
+    files: [datasource.yaml, dashboards.yaml]
+  - name: grafana-dashboards
+    files: [salsmart-dashboard.json]

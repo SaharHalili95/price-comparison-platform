@@ -1,0 +1,21 @@
+groups:
+  - name: salsmart
+    rules:
+      - alert: ChainDataStale
+        expr: time() - salsmart_chain_newest_file_timestamp_seconds > 2 * 86400
+        for: 1h
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $labels.chain }} has not published a new price file for over 2 days"
+      - alert: ChainIngestionFailed
+        expr: salsmart_chain_run_status{status=~"failed|partial"} == 1
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "The latest {{ $labels.chain }} ingestion ended {{ $labels.status }}"
+      - alert: ApiDown
+        expr: up{job="api"} == 0
+        for: 5m
+        labels: { severity: critical }
+        annotations:
+          summary: "The SalSmart API is not answering /metrics"

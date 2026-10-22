@@ -38,5 +38,13 @@ kubectl -n salsmart port-forward service/mailpit 8025:8025 >/dev/null 2>&1 &
 for _ in $(seq 30); do curl -sf localhost:8025/api/v1/messages | grep -q smoke-item && break; sleep 1; done
 curl -sf localhost:8025/api/v1/messages | grep -q smoke-item
 echo "alert email delivered"
+
+kubectl -n salsmart rollout status deployment/prometheus --timeout=180s
+kubectl -n salsmart rollout status deployment/grafana --timeout=180s
+kubectl -n salsmart port-forward service/prometheus 9090:9090 >/dev/null 2>&1 &
+for _ in $(seq 90); do curl -sf "localhost:9090/api/v1/query?query=salsmart_chain_items" | grep -q osher-ad && break; sleep 2; done
+curl -sf "localhost:9090/api/v1/query?query=salsmart_chain_items" | grep -q osher-ad
+curl -sf "localhost:9090/api/v1/rules" | grep -q ChainDataStale
+echo "prometheus scrapes the API and has the alert rules"
 kubectl -n salsmart get cronjobs
 echo "kind smoke test passed"
