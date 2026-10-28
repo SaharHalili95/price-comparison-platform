@@ -14,7 +14,6 @@ async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security_scheme),
     db: Session = Depends(get_db),
 ) -> User:
-    """Extract and validate JWT, return user."""
     token = credentials.credentials
 
     try:

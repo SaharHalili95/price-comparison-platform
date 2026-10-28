@@ -117,7 +117,6 @@ class AuthService:
         refresh_token_str: str,
         request: Optional[Request] = None,
     ) -> Optional[tuple]:
-        """Validate refresh token, rotate it, return new tokens."""
         try:
             payload = decode_token(refresh_token_str)
         except Exception:
@@ -167,7 +166,6 @@ class AuthService:
         refresh_token_str: Optional[str],
         user_id: int,
     ):
-        """Blacklist access token and revoke refresh session."""
         db.add(TokenBlacklist(
             jti=access_token_jti,
             token_type="access",

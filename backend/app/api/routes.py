@@ -106,7 +106,6 @@ def cities(db: Session = Depends(get_db)):
 
 @router.get("/status")
 def ingestion_status(db: Session = Depends(get_db)):
-    """Latest run per chain, for the status page."""
     rows = db.execute(
         text(
             """

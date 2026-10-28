@@ -34,7 +34,6 @@ async def register(
     body: UserRegisterRequest,
     db: Session = Depends(get_db),
 ):
-    """Register a new user account."""
     try:
         user = AuthService.register_user(
             db=db,
@@ -57,7 +56,6 @@ async def login(
     body: UserLoginRequest,
     db: Session = Depends(get_db),
 ):
-    """Authenticate and receive JWT tokens."""
     user = AuthService.authenticate_user(db, body.email, body.password)
 
     if not user:
@@ -86,7 +84,6 @@ async def refresh_token(
     body: RefreshTokenRequest,
     db: Session = Depends(get_db),
 ):
-    """Rotate refresh token and get new access token."""
     result = AuthService.refresh_session(db, body.refresh_token, request)
 
     if not result:
@@ -118,7 +115,6 @@ async def logout(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Logout: blacklist access token and revoke refresh token."""
     auth_header = request.headers.get("authorization", "")
     access_token_str = auth_header.replace("Bearer ", "")
 
@@ -140,7 +136,6 @@ async def logout(
 async def get_current_user_profile(
     current_user: User = Depends(get_current_user),
 ):
-    """Get the current authenticated user's profile."""
     return current_user
 
 

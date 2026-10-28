@@ -17,7 +17,6 @@ Base = declarative_base()
 
 
 def get_db():
-    """Dependency to get database session"""
     db = SessionLocal()
     try:
         yield db
@@ -26,7 +25,6 @@ def get_db():
 
 
 def init_db():
-    """Bring the schema up to date by running the Alembic migrations."""
     from alembic import command
     from alembic.config import Config
 
