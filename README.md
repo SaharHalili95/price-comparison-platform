@@ -37,7 +37,6 @@ Measured on 2026-10-21 from Israel:
 | Rami Levy | Cerberus | 99 | 1,009,948 | 122 s | success |
 | Yohananof | Cerberus | 48 | 477,134 | 62 s | success |
 | Osher Ad | Cerberus | 25 | 154,274 | 22 s | success |
-| Shufersal | own portal | 0 | 0 | 135 s | failed: the portal timed out on every retry, recorded as a failed run |
 
 - **Totals:** one run of the three working chains stored **1,641,356 current prices** for **39,812 items** in **174 stores**, in a 491 MB database.
 - **Re-runs add nothing:** running Yohananof again the same day recorded **0 price changes**, so the history did not grow.
@@ -54,7 +53,7 @@ Real-world quirks the parsers handle, all found in these feeds:
 | Cities | A CBS locality code (`3000` = Jerusalem) or `0` for unknown |
 | Item codes | Real barcodes, and short internal codes (`100` = tomatoes at Rami Levy) that mean different things per chain |
 | Precision | Unit prices with four decimals (`0.0571` per meter) |
-| Stale or unreliable feeds | Store files last updated in 2024; Shufersal's portal answering once and then timing out |
+| Stale or unreliable feeds | Store files last updated in 2024 |
 
 ## How ingestion works
 
@@ -62,7 +61,6 @@ Real-world quirks the parsers handle, all found in these feeds:
 flowchart LR
     subgraph Portals
         C[Cerberus portal<br/>Rami Levy, Osher Ad, Yohananof]
-        S[Shufersal portal]
     end
     F[Feed clients<br/>CSRF login, retries, backoff]
     P[Streaming parsers<br/>lxml iterparse]
@@ -70,7 +68,6 @@ flowchart LR
     DB[(PostgreSQL)]
     R[ingestion_runs]
     C --> F
-    S --> F
     F --> P --> L --> DB
     L --> R
 ```

@@ -108,14 +108,14 @@ class UnreachablePortal:
     def list_files(self, kinds):
         from app.ingest.feeds.base import FeedError
 
-        raise FeedError("GET https://prices.shufersal.co.il failed after 4 attempts: ReadTimeout")
+        raise FeedError("GET https://url.publishedprices.co.il failed after 4 attempts: ReadTimeout")
 
     def download(self, file):
         raise AssertionError("nothing to download")
 
 
 def test_unreachable_portal_is_recorded_as_failed(session):
-    run = run_chain("shufersal", UnreachablePortal(), now=SAME_DAY)
+    run = run_chain("osher-ad", UnreachablePortal(), now=SAME_DAY)
     assert run.status == "failed"
     assert run.finished_at is not None
     assert "ReadTimeout" in run.errors[0]["error"]
