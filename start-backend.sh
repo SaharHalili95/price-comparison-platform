@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Smart Price Comparison Platform - Backend Startup Script
+# SalSmart - Backend Startup Script
 
-echo "🚀 Starting Smart Price Comparison Platform - Backend"
+echo "🚀 Starting SalSmart - Backend"
 echo "================================================"
 
 # Navigate to backend directory

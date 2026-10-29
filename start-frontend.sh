@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Smart Price Comparison Platform - Frontend Startup Script
+# SalSmart - Frontend Startup Script
 
-echo "🚀 Starting Smart Price Comparison Platform - Frontend"
+echo "🚀 Starting SalSmart - Frontend"
 echo "================================================"
 
 # Navigate to frontend directory
