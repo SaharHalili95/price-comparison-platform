@@ -13,7 +13,7 @@ def _names() -> dict[int, str]:
 
 
 def city_name(value: str) -> str:
-    """Store files give either a CBS locality code (Rami Levy: 3000) or a name (Shufersal). 0 means unknown."""
+    """Store files give either a CBS locality code (Rami Levy: 3000) or a locality name. 0 means unknown."""
     value = " ".join(value.split())
     if not value.isdigit():
         return value

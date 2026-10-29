@@ -3,7 +3,6 @@ from dataclasses import dataclass
 
 from app.ingest.feeds.base import FeedClient
 from app.ingest.feeds.cerberus import CerberusClient
-from app.ingest.feeds.shufersal import ShufersalClient
 
 
 @dataclass(frozen=True)
@@ -21,6 +20,5 @@ CHAINS: dict[str, ChainConfig] = {
         ChainConfig("rami-levy", "7290058140886", "רמי לוי", "cerberus", lambda: CerberusClient("RamiLevi")),
         ChainConfig("osher-ad", "7290103152017", "אושר עד", "cerberus", lambda: CerberusClient("osherad")),
         ChainConfig("yohananof", "7290803800003", "יוחננוף", "cerberus", lambda: CerberusClient("yohananof")),
-        ChainConfig("shufersal", "7290027600007", "שופרסל", "shufersal", ShufersalClient),
     )
 }

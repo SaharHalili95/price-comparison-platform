@@ -5,10 +5,9 @@ import httpx
 import pytest
 import respx
 
-from app.ingest.feeds.base import USER_AGENT, FeedError, FeedFile, file_kind, polite_get, published_at
+from app.ingest.feeds.base import USER_AGENT, FeedError, file_kind, polite_get, published_at
 from app.ingest.feeds.cerberus import CERBERUS_URL, CerberusClient
 from app.ingest.feeds.chains import CHAINS
-from app.ingest.feeds.shufersal import SHUFERSAL_URL, ShufersalClient
 
 LOGIN_PAGE = '<html><head><meta name="csrftoken" content="login-token"></head></html>'
 FILES_PAGE = '<html><head><meta name="csrftoken" content="files-token"></head></html>'
@@ -110,33 +109,9 @@ def test_cerberus_rejected_login_raises():
         CerberusClient("NoSuchChain", sleep=no_sleep).list_files({"prices"})
 
 
-@respx.mock
-def test_shufersal_unescapes_blob_urls_and_pages():
-    blob = "https://pricesprodpublic.blob.core.windows.net/pricefull/PriceFull7290027600007-001-001-20261021-043100.gz"
-    page_one = f'<a href="{blob}?sv=2014-02-14&amp;sr=b&amp;sig=abc">x</a>'
-    respx.get(f"{SHUFERSAL_URL}/FileObject/UpdateCategory", params={"catID": "2", "page": "1"}).mock(
-        return_value=httpx.Response(200, text=page_one)
-    )
-    respx.get(f"{SHUFERSAL_URL}/FileObject/UpdateCategory", params={"catID": "2", "page": "2"}).mock(
-        return_value=httpx.Response(200, text="<html></html>")
-    )
-    files = ShufersalClient(sleep=no_sleep).list_files({"prices"})
-    assert [f.name for f in files] == ["PriceFull7290027600007-001-001-20261021-043100.gz"]
-    assert files[0].url == f"{blob}?sv=2014-02-14&sr=b&sig=abc"
-    assert files[0].kind == "prices"
-
-
-@respx.mock
-def test_download_returns_bytes():
-    respx.get("https://feed.test/a.gz").mock(return_value=httpx.Response(200, content=b"\x1f\x8bdata"))
-    file = FeedFile(name="a.gz", kind="prices", published_at=datetime(2026, 10, 21), url="https://feed.test/a.gz")
-    assert ShufersalClient(sleep=no_sleep).download(file) == b"\x1f\x8bdata"
-
-
-def test_registry_has_the_four_chains():
+def test_registry_has_the_three_chains():
     assert {slug: c.chain_id for slug, c in CHAINS.items()} == {
         "rami-levy": "7290058140886",
         "osher-ad": "7290103152017",
         "yohananof": "7290803800003",
-        "shufersal": "7290027600007",
     }
