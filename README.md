@@ -136,6 +136,10 @@ cd backend && pytest
 4. **Alerts** (done): price drops published to RabbitMQ, an email notifier that only acknowledges after sending, Google sign-in, saved baskets.
 5. **Monitoring and hosting** (done, deploy pending accounts): `/metrics`, Prometheus alert rules (stale chain, failed run, API down), a provisioned Grafana dashboard, multi-arch images on GHCR, and a production overlay for k3s on a free Oracle VM in Jerusalem ([docs/deploy.md](docs/deploy.md)).
 
+## Credits
+
+Locality codes come from Israel's Central Bureau of Statistics. Prices come from the files that supermarket chains must publish by law. This project is not affiliated with any chain.
+
 ## License
 
 MIT
